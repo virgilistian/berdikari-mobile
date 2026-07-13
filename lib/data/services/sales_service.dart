@@ -1,4 +1,5 @@
 import '../models/order.dart';
+import '../models/sales_summary.dart';
 import '../models/shift.dart';
 import 'api_client.dart';
 
@@ -19,15 +20,31 @@ class SalesService {
   Future<List<Order>> fetchOrders({
     String? businessId,
     String? status,
+    String? date,
   }) async {
     final response = await _api.get('/sales/orders', query: {
       'business_id': ?businessId,
       if (status != null && status.isNotEmpty) 'status': status,
+      'date': ?date,
     });
     return (response['data'] as List? ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(Order.fromJson)
         .toList();
+  }
+
+  /// `GET /sales/summary` — aggregated sales for the Reports screen.
+  Future<SalesSummary> fetchSummary({
+    String? businessId,
+    String? from,
+    String? to,
+  }) async {
+    final response = await _api.get('/sales/summary', query: {
+      'business_id': ?businessId,
+      'from': ?from,
+      'to': ?to,
+    });
+    return SalesSummary.fromJson(response['data'] as Map<String, dynamic>);
   }
 
   /// `GET /sales/shifts/active` — `data` is null when no shift is open.

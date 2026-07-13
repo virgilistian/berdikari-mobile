@@ -7,12 +7,14 @@ import 'data/repositories/auth_repository.dart';
 import 'data/repositories/cart_repository.dart';
 import 'data/repositories/catalog_repository.dart';
 import 'data/repositories/daily_stock_repository.dart';
+import 'data/repositories/finance_repository.dart';
 import 'data/repositories/orders_repository.dart';
 import 'data/repositories/shift_repository.dart';
 import 'data/repositories/stock_repository.dart';
 import 'data/services/api_client.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/catalog_service.dart';
+import 'data/services/finance_service.dart';
 import 'data/services/inventory_service.dart';
 import 'data/services/sales_service.dart';
 import 'data/services/token_storage.dart';
@@ -27,6 +29,7 @@ class BerdikariApp extends StatefulWidget {
     this.catalogService,
     this.salesService,
     this.inventoryService,
+    this.financeService,
   });
 
   /// Test seams: inject pre-configured fakes. Production leaves them null.
@@ -34,6 +37,7 @@ class BerdikariApp extends StatefulWidget {
   final CatalogService? catalogService;
   final SalesService? salesService;
   final InventoryService? inventoryService;
+  final FinanceService? financeService;
 
   @override
   State<BerdikariApp> createState() => _BerdikariAppState();
@@ -49,6 +53,10 @@ class _BerdikariAppState extends State<BerdikariApp> {
   late final OrdersRepository _ordersRepository;
   late final DailyStockRepository _dailyStockRepository;
   late final StockRepository _stockRepository;
+  late final FinanceRepository _financeRepository;
+  late final SalesService _salesService;
+  late final InventoryService _inventoryService;
+  late final FinanceService _financeService;
   late final GoRouter _router;
 
   @override
@@ -71,27 +79,32 @@ class _BerdikariAppState extends State<BerdikariApp> {
 
     final catalogService =
         widget.catalogService ?? CatalogService(apiClient: _apiClient);
-    final salesService =
-        widget.salesService ?? SalesService(apiClient: _apiClient);
-    final inventoryService =
+    _salesService = widget.salesService ?? SalesService(apiClient: _apiClient);
+    _inventoryService =
         widget.inventoryService ?? InventoryService(apiClient: _apiClient);
+    _financeService =
+        widget.financeService ?? FinanceService(apiClient: _apiClient);
 
     _catalogRepository = CatalogRepository(catalogService: catalogService);
     _cartRepository = CartRepository(
-      salesService: salesService,
+      salesService: _salesService,
       authRepository: _authRepository,
     );
-    _shiftRepository = ShiftRepository(salesService: salesService);
+    _shiftRepository = ShiftRepository(salesService: _salesService);
     _ordersRepository = OrdersRepository(
-      salesService: salesService,
+      salesService: _salesService,
       authRepository: _authRepository,
     );
     _dailyStockRepository = DailyStockRepository(
-      inventoryService: inventoryService,
+      inventoryService: _inventoryService,
       authRepository: _authRepository,
     );
     _stockRepository = StockRepository(
-      inventoryService: inventoryService,
+      inventoryService: _inventoryService,
+      authRepository: _authRepository,
+    );
+    _financeRepository = FinanceRepository(
+      financeService: _financeService,
       authRepository: _authRepository,
     );
 
@@ -119,6 +132,11 @@ class _BerdikariAppState extends State<BerdikariApp> {
         ChangeNotifierProvider<DailyStockRepository>.value(
             value: _dailyStockRepository),
         ChangeNotifierProvider<StockRepository>.value(value: _stockRepository),
+        ChangeNotifierProvider<FinanceRepository>.value(
+            value: _financeRepository),
+        Provider<SalesService>.value(value: _salesService),
+        Provider<InventoryService>.value(value: _inventoryService),
+        Provider<FinanceService>.value(value: _financeService),
       ],
       child: MaterialApp.router(
         title: 'Berdikari',

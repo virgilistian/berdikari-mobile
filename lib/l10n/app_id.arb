@@ -745,5 +745,374 @@
   "movementAdjustment": "Penyesuaian",
   "@movementAdjustment": {
     "description": "Jenis pergerakan: penyesuaian"
+  },
+
+  "financeHistoryTitle": "Riwayat Transaksi",
+  "@financeHistoryTitle": {
+    "description": "Judul daftar transaksi keuangan"
+  },
+  "financeAddNew": "Tambah Baru",
+  "@financeAddNew": {
+    "description": "Tombol tambah transaksi keuangan baru"
+  },
+  "financeTypeAll": "Semua",
+  "@financeTypeAll": {
+    "description": "Filter jenis transaksi: semua"
+  },
+  "financeTypeIncome": "Pemasukan",
+  "@financeTypeIncome": {
+    "description": "Filter/label jenis transaksi: pemasukan"
+  },
+  "financeTypeExpense": "Pengeluaran",
+  "@financeTypeExpense": {
+    "description": "Filter/label jenis transaksi: pengeluaran"
+  },
+  "financePeriodAll": "Semua",
+  "@financePeriodAll": {
+    "description": "Filter periode keuangan: semua"
+  },
+  "financePeriodToday": "Hari Ini",
+  "@financePeriodToday": {
+    "description": "Filter periode keuangan: hari ini"
+  },
+  "financePeriodWeek": "Minggu Ini",
+  "@financePeriodWeek": {
+    "description": "Filter periode keuangan: minggu ini"
+  },
+  "financePeriodMonth": "Bulan Ini",
+  "@financePeriodMonth": {
+    "description": "Filter periode keuangan: bulan ini"
+  },
+  "financeIncomeLabel": "Pemasukan",
+  "@financeIncomeLabel": {
+    "description": "Kartu ringkasan total pemasukan"
+  },
+  "financeExpenseLabel": "Pengeluaran",
+  "@financeExpenseLabel": {
+    "description": "Kartu ringkasan total pengeluaran"
+  },
+  "financeNetLabel": "Saldo Bersih",
+  "@financeNetLabel": {
+    "description": "Kartu saldo bersih (pemasukan dikurangi pengeluaran)"
+  },
+  "financeEmptyTitle": "Belum ada transaksi",
+  "@financeEmptyTitle": {
+    "description": "Judul keadaan kosong daftar keuangan"
+  },
+  "financeEmptyMessage": "Tidak ada transaksi untuk filter ini",
+  "@financeEmptyMessage": {
+    "description": "Pesan keadaan kosong daftar keuangan"
+  },
+  "deleteFinanceEntryTitle": "Hapus transaksi?",
+  "@deleteFinanceEntryTitle": {
+    "description": "Judul konfirmasi hapus transaksi keuangan"
+  },
+  "deleteFinanceEntryMessage": "Transaksi {category} akan dihapus.",
+  "@deleteFinanceEntryMessage": {
+    "description": "Isi konfirmasi hapus transaksi keuangan",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "financeNewExpenseTitle": "Catat Pengeluaran",
+  "@financeNewExpenseTitle": {
+    "description": "Judul formulir pengeluaran baru"
+  },
+  "financeNewIncomeTitle": "Catat Pemasukan",
+  "@financeNewIncomeTitle": {
+    "description": "Judul formulir pemasukan baru"
+  },
+  "financeAmountLabel": "Jumlah",
+  "@financeAmountLabel": {
+    "description": "Label input jumlah transaksi keuangan"
+  },
+  "financeAmountRequired": "Jumlah wajib diisi.",
+  "@financeAmountRequired": {
+    "description": "Validasi jumlah transaksi keuangan"
+  },
+  "financeCategoryLabel": "Kategori",
+  "@financeCategoryLabel": {
+    "description": "Label pilihan kategori transaksi keuangan"
+  },
+  "financeCategoryRequired": "Pilih kategori terlebih dahulu.",
+  "@financeCategoryRequired": {
+    "description": "Validasi kategori transaksi keuangan"
+  },
+  "financeNoteLabel": "Catatan",
+  "@financeNoteLabel": {
+    "description": "Label catatan opsional transaksi keuangan"
+  },
+  "financeNoteHint": "mis. Belanja bahan di pasar",
+  "@financeNoteHint": {
+    "description": "Contoh isi catatan transaksi keuangan"
+  },
+  "financeSaveExpense": "Simpan Pengeluaran",
+  "@financeSaveExpense": {
+    "description": "Tombol simpan pengeluaran"
+  },
+  "financeSaveIncome": "Simpan Pemasukan",
+  "@financeSaveIncome": {
+    "description": "Tombol simpan pemasukan"
+  },
+  "financeSaved": "Transaksi berhasil disimpan.",
+  "@financeSaved": {
+    "description": "Notifikasi setelah transaksi keuangan tersimpan"
+  },
+
+  "homeSalesTodayLabel": "Penjualan Hari Ini",
+  "@homeSalesTodayLabel": {
+    "description": "Kartu KPI dashboard: total penjualan hari ini"
+  },
+  "homeAverageTicketLabel": "Rata-rata Nota",
+  "@homeAverageTicketLabel": {
+    "description": "Kartu KPI dashboard: rata-rata nilai transaksi"
+  },
+  "homePerTransaction": "per transaksi",
+  "@homePerTransaction": {
+    "description": "Keterangan kartu rata-rata nota"
+  },
+  "homeCashTodayLabel": "Kas Hari Ini",
+  "@homeCashTodayLabel": {
+    "description": "Kartu KPI dashboard: saldo kas hari ini"
+  },
+  "homeCashInHint": "Masuk {amount}",
+  "@homeCashInHint": {
+    "description": "Keterangan kartu kas: total pemasukan",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTransactionCount": "{count} transaksi",
+  "@homeTransactionCount": {
+    "description": "Jumlah transaksi pada kartu KPI",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeLowStockNeedsRefill": "perlu diisi ulang",
+  "@homeLowStockNeedsRefill": {
+    "description": "Keterangan kartu stok menipis saat ada produk menipis"
+  },
+  "homeLowStockSafe": "semua stok aman",
+  "@homeLowStockSafe": {
+    "description": "Keterangan kartu stok menipis saat tidak ada produk menipis"
+  },
+  "homeActionOpenShiftTitle": "Buka Kasir",
+  "@homeActionOpenShiftTitle": {
+    "description": "Judul aksi utama dashboard: buka kasir"
+  },
+  "homeActionOpenShiftSubtitle": "Mulai transaksi hari ini",
+  "@homeActionOpenShiftSubtitle": {
+    "description": "Subjudul aksi utama dashboard: buka kasir"
+  },
+  "homeActionOpenShiftCta": "Buka Kasir",
+  "@homeActionOpenShiftCta": {
+    "description": "Tombol aksi utama dashboard: buka kasir"
+  },
+  "homeActionFinanceTitle": "Catat Keuangan",
+  "@homeActionFinanceTitle": {
+    "description": "Judul aksi utama dashboard: catat keuangan"
+  },
+  "homeActionFinanceSubtitle": "Tambah pemasukan / pengeluaran",
+  "@homeActionFinanceSubtitle": {
+    "description": "Subjudul aksi utama dashboard: catat keuangan"
+  },
+  "homeActionFinanceCta": "Tambah",
+  "@homeActionFinanceCta": {
+    "description": "Tombol aksi utama dashboard: catat keuangan"
+  },
+  "homeActionDailyStockTitle": "Stok Harian",
+  "@homeActionDailyStockTitle": {
+    "description": "Judul aksi utama dashboard: stok harian"
+  },
+  "homeActionDailyStockSubtitle": "Input stok pembukaan hari ini",
+  "@homeActionDailyStockSubtitle": {
+    "description": "Subjudul aksi utama dashboard: stok harian"
+  },
+  "homeActionDailyStockCta": "Input Stok",
+  "@homeActionDailyStockCta": {
+    "description": "Tombol aksi utama dashboard: stok harian"
+  },
+  "homeQuickFinance": "Catat Kas",
+  "@homeQuickFinance": {
+    "description": "Pintasan dashboard: catat kas"
+  },
+  "homeQuickDailyStock": "Stok Harian",
+  "@homeQuickDailyStock": {
+    "description": "Pintasan dashboard: stok harian"
+  },
+  "homeQuickReports": "Laporan Bisnis",
+  "@homeQuickReports": {
+    "description": "Pintasan dashboard: laporan bisnis"
+  },
+  "homeRecentTransactionsTitle": "Transaksi Terbaru",
+  "@homeRecentTransactionsTitle": {
+    "description": "Judul daftar transaksi terbaru di dashboard"
+  },
+  "homeSeeAll": "Lihat semua",
+  "@homeSeeAll": {
+    "description": "Tautan lihat semua transaksi"
+  },
+  "homeNoTransactionsTitle": "Belum ada transaksi",
+  "@homeNoTransactionsTitle": {
+    "description": "Judul keadaan kosong transaksi terbaru"
+  },
+  "homeNoTransactionsMessage": "Mulai kasir untuk mencatat penjualan pertama hari ini",
+  "@homeNoTransactionsMessage": {
+    "description": "Pesan keadaan kosong transaksi terbaru"
+  },
+  "homeUnnamedOrder": "Tanpa nama",
+  "@homeUnnamedOrder": {
+    "description": "Nama fallback pesanan tanpa pelanggan/nomor"
+  },
+
+  "reportsTitle": "Laporan",
+  "@reportsTitle": {
+    "description": "Judul halaman laporan"
+  },
+  "reportPeriodToday": "Hari ini",
+  "@reportPeriodToday": {
+    "description": "Filter periode laporan: hari ini"
+  },
+  "reportPeriod7": "7 hari",
+  "@reportPeriod7": {
+    "description": "Filter periode laporan: 7 hari terakhir"
+  },
+  "reportPeriod30": "30 hari",
+  "@reportPeriod30": {
+    "description": "Filter periode laporan: 30 hari terakhir"
+  },
+  "reportPeriod90": "3 bulan",
+  "@reportPeriod90": {
+    "description": "Filter periode laporan: 90 hari terakhir"
+  },
+  "reportGrossSales": "Total Penjualan",
+  "@reportGrossSales": {
+    "description": "Kartu KPI laporan: total penjualan"
+  },
+  "reportAverageTicket": "Rata-rata Nota",
+  "@reportAverageTicket": {
+    "description": "Kartu KPI laporan: rata-rata nilai transaksi"
+  },
+  "reportNetCash": "Laba/Rugi Kas",
+  "@reportNetCash": {
+    "description": "Kartu KPI laporan: saldo kas bersih"
+  },
+  "reportTopPaymentMethod": "Metode Terbanyak",
+  "@reportTopPaymentMethod": {
+    "description": "Kartu KPI laporan: metode pembayaran terbanyak"
+  },
+  "reportNoPayment": "belum ada pembayaran",
+  "@reportNoPayment": {
+    "description": "Keterangan saat belum ada data pembayaran"
+  },
+  "reportInsightsTitle": "Sorotan Bisnis",
+  "@reportInsightsTitle": {
+    "description": "Judul kartu sorotan/insight laporan"
+  },
+  "reportInsightTopProduct": "Produk terlaris: {name} ({quantity} terjual).",
+  "@reportInsightTopProduct": {
+    "description": "Sorotan: produk terlaris pada periode laporan",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "reportInsightBestDay": "Penjualan tertinggi pada {date} sebesar {amount}.",
+  "@reportInsightBestDay": {
+    "description": "Sorotan: hari dengan penjualan tertinggi",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reportInsightReceivable": "Ada piutang {amount} yang belum dibayar pelanggan.",
+  "@reportInsightReceivable": {
+    "description": "Sorotan: total piutang belum dibayar",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reportInsightNetLoss": "Pengeluaran melebihi pemasukan sebesar {amount} pada periode ini.",
+  "@reportInsightNetLoss": {
+    "description": "Sorotan: kas bersih negatif pada periode laporan",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reportInsightLowStock": "{count} produk hampir habis — segera isi ulang stok.",
+  "@reportInsightLowStock": {
+    "description": "Sorotan: jumlah produk stok menipis",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportSalesSection": "Penjualan",
+  "@reportSalesSection": {
+    "description": "Judul bagian penjualan pada laporan"
+  },
+  "reportDailySalesEmpty": "Belum ada penjualan pada periode ini",
+  "@reportDailySalesEmpty": {
+    "description": "Keadaan kosong grafik penjualan harian"
+  },
+  "reportTopProducts": "Produk Terlaris",
+  "@reportTopProducts": {
+    "description": "Judul daftar produk terlaris pada laporan"
+  },
+  "reportTopProductsEmpty": "Belum ada data",
+  "@reportTopProductsEmpty": {
+    "description": "Keadaan kosong daftar produk terlaris"
+  },
+  "reportDeletedProduct": "Produk terhapus",
+  "@reportDeletedProduct": {
+    "description": "Nama fallback untuk produk yang sudah dihapus"
+  },
+  "reportFinanceSection": "Keuangan",
+  "@reportFinanceSection": {
+    "description": "Judul bagian keuangan pada laporan"
+  },
+  "reportIncomeByCategory": "Pemasukan per Kategori",
+  "@reportIncomeByCategory": {
+    "description": "Judul rincian pemasukan per kategori"
+  },
+  "reportExpenseByCategory": "Pengeluaran per Kategori",
+  "@reportExpenseByCategory": {
+    "description": "Judul rincian pengeluaran per kategori"
+  },
+  "reportNoData": "Belum ada data",
+  "@reportNoData": {
+    "description": "Keadaan kosong rincian kategori keuangan"
+  },
+  "reportStockSection": "Stok",
+  "@reportStockSection": {
+    "description": "Judul bagian stok pada laporan"
+  },
+  "reportLowStockEmpty": "Semua stok di atas ambang batas",
+  "@reportLowStockEmpty": {
+    "description": "Keadaan aman saat tidak ada stok menipis pada laporan"
+  },
+  "reportExportCsv": "Unduh CSV",
+  "@reportExportCsv": {
+    "description": "Tombol ekspor laporan ke CSV"
   }
 }

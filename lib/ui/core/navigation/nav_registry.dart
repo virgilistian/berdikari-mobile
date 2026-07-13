@@ -129,4 +129,5 @@ final Map<String, List<String>> routePermissions = {
   '/pos/orders': const ['pos.view', 'pos.open'],
   '/inventory/new': const ['inventory.create'],
   '/inventory/stock': const ['inventory.view'],
+  '/finance/new': const ['finance.create'],
 };

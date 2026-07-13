@@ -49,3 +49,12 @@ abstract final class AppColorsDark {
 
   static const ring = Color(0xFF33A398);
 }
+
+/// Exposes the `success`/`warning` tokens (not part of Flutter's
+/// [ColorScheme]) the same way `colorScheme.error` exposes `destructive`.
+extension AppColorSchemeExtras on ColorScheme {
+  Color get success =>
+      brightness == Brightness.dark ? AppColorsDark.success : AppColorsLight.success;
+  Color get warning =>
+      brightness == Brightness.dark ? AppColorsDark.warning : AppColorsLight.warning;
+}
