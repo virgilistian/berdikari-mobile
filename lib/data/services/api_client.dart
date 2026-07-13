@@ -51,7 +51,10 @@ class ApiClient {
   final Future<String?> Function() tokenProvider;
   final http.Client _http;
   final String _baseUrl;
-  final UnauthorizedCallback? onUnauthorized;
+
+  /// Invoked on any 401 response. Mutable so it can be wired to
+  /// [AuthRepository.clearSession] after both objects exist.
+  UnauthorizedCallback? onUnauthorized;
 
   Future<Map<String, dynamic>> get(
     String path, {

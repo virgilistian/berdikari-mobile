@@ -4,9 +4,14 @@
   "@appTitle": {
     "description": "Nama aplikasi"
   },
-  "homeGreeting": "Selamat datang di Berdikari",
-  "@homeGreeting": {
-    "description": "Sapaan di layar utama"
+  "homeGreetingUser": "Halo, {name}",
+  "@homeGreetingUser": {
+    "description": "Sapaan di layar utama dengan nama pengguna",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "homeSubtitle": "ERP sederhana untuk usaha Anda",
   "@homeSubtitle": {
@@ -19,5 +24,173 @@
   "retry": "Coba Lagi",
   "@retry": {
     "description": "Tombol coba lagi"
+  },
+  "cancel": "Batal",
+  "@cancel": {
+    "description": "Tombol batal"
+  },
+  "save": "Simpan",
+  "@save": {
+    "description": "Tombol simpan"
+  },
+  "loginTitle": "Masuk",
+  "@loginTitle": {
+    "description": "Judul halaman masuk"
+  },
+  "loginSubtitle": "Masuk untuk mengelola usaha Anda",
+  "@loginSubtitle": {
+    "description": "Subjudul halaman masuk"
+  },
+  "emailLabel": "Email",
+  "@emailLabel": {
+    "description": "Label kolom email"
+  },
+  "passwordLabel": "Kata Sandi",
+  "@passwordLabel": {
+    "description": "Label kolom kata sandi"
+  },
+  "loginButton": "Masuk",
+  "@loginButton": {
+    "description": "Tombol masuk"
+  },
+  "emailRequired": "Email wajib diisi.",
+  "@emailRequired": {
+    "description": "Validasi email kosong"
+  },
+  "passwordRequired": "Kata sandi wajib diisi.",
+  "@passwordRequired": {
+    "description": "Validasi kata sandi kosong"
+  },
+  "navHome": "Beranda",
+  "@navHome": {
+    "description": "Menu navigasi: beranda"
+  },
+  "navPos": "Kasir",
+  "@navPos": {
+    "description": "Menu navigasi: kasir (POS)"
+  },
+  "navShift": "Shift Kasir",
+  "@navShift": {
+    "description": "Menu navigasi: shift kasir"
+  },
+  "navFinance": "Keuangan",
+  "@navFinance": {
+    "description": "Menu navigasi: keuangan"
+  },
+  "navCatalog": "Katalog",
+  "@navCatalog": {
+    "description": "Menu navigasi: katalog produk"
+  },
+  "navInventory": "Stok",
+  "@navInventory": {
+    "description": "Menu navigasi: stok/inventori"
+  },
+  "navReports": "Laporan",
+  "@navReports": {
+    "description": "Menu navigasi: laporan"
+  },
+  "navEmployees": "Karyawan",
+  "@navEmployees": {
+    "description": "Menu navigasi: karyawan"
+  },
+  "navAttendance": "Absensi",
+  "@navAttendance": {
+    "description": "Menu navigasi: absensi"
+  },
+  "navSettings": "Pengaturan",
+  "@navSettings": {
+    "description": "Menu navigasi: pengaturan"
+  },
+  "navUsers": "Pengguna",
+  "@navUsers": {
+    "description": "Menu navigasi: pengguna"
+  },
+  "navRoles": "Peran & Akses",
+  "@navRoles": {
+    "description": "Menu navigasi: peran dan akses"
+  },
+  "navMore": "Lainnya",
+  "@navMore": {
+    "description": "Menu navigasi: lainnya (bottom sheet)"
+  },
+  "comingSoon": "Segera hadir",
+  "@comingSoon": {
+    "description": "Penanda fitur yang belum tersedia"
+  },
+  "forbiddenTitle": "Akses Ditolak",
+  "@forbiddenTitle": {
+    "description": "Judul halaman 403"
+  },
+  "forbiddenMessage": "Anda tidak memiliki izin untuk membuka halaman ini.",
+  "@forbiddenMessage": {
+    "description": "Pesan halaman 403"
+  },
+  "backToHome": "Kembali ke Beranda",
+  "@backToHome": {
+    "description": "Tombol kembali ke beranda"
+  },
+  "settingsTitle": "Pengaturan",
+  "@settingsTitle": {
+    "description": "Judul halaman pengaturan"
+  },
+  "profileTitle": "Profil",
+  "@profileTitle": {
+    "description": "Judul halaman profil"
+  },
+  "profileSubtitle": "Ubah nama dan email Anda",
+  "@profileSubtitle": {
+    "description": "Subjudul menu profil"
+  },
+  "profileSaved": "Profil berhasil disimpan.",
+  "@profileSaved": {
+    "description": "Notifikasi profil tersimpan"
+  },
+  "nameLabel": "Nama",
+  "@nameLabel": {
+    "description": "Label kolom nama"
+  },
+  "nameRequired": "Nama wajib diisi.",
+  "@nameRequired": {
+    "description": "Validasi nama kosong"
+  },
+  "changePasswordTitle": "Ubah Kata Sandi",
+  "@changePasswordTitle": {
+    "description": "Judul halaman ubah kata sandi"
+  },
+  "changePasswordSubtitle": "Perbarui kata sandi akun Anda",
+  "@changePasswordSubtitle": {
+    "description": "Subjudul menu ubah kata sandi"
+  },
+  "currentPasswordLabel": "Kata Sandi Saat Ini",
+  "@currentPasswordLabel": {
+    "description": "Label kolom kata sandi saat ini"
+  },
+  "newPasswordLabel": "Kata Sandi Baru",
+  "@newPasswordLabel": {
+    "description": "Label kolom kata sandi baru"
+  },
+  "confirmPasswordLabel": "Konfirmasi Kata Sandi Baru",
+  "@confirmPasswordLabel": {
+    "description": "Label kolom konfirmasi kata sandi"
+  },
+  "passwordChanged": "Kata sandi berhasil diubah.",
+  "@passwordChanged": {
+    "description": "Notifikasi kata sandi berubah"
+  },
+  "passwordMismatch": "Konfirmasi kata sandi tidak sama.",
+  "@passwordMismatch": {
+    "description": "Validasi konfirmasi kata sandi berbeda"
+  },
+  "logout": "Keluar",
+  "@logout": {
+    "description": "Tombol keluar"
+  },
+  "logoutConfirmTitle": "Keluar dari akun?",
+  "@logoutConfirmTitle": {
+    "description": "Judul dialog konfirmasi keluar"
+  },
+  "logoutConfirmMessage": "Anda harus masuk kembali untuk menggunakan aplikasi.",
+  "@logoutConfirmMessage": {
+    "description": "Isi dialog konfirmasi keluar"
   }
 }

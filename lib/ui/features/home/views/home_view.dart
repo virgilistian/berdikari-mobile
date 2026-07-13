@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../data/repositories/auth_repository.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 
-/// Placeholder shell screen. Replaced by the real dashboard in Phase 4;
-/// Phase 1 puts the login flow in front of it.
+/// Placeholder dashboard — real KPIs land in Phase 4.
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
@@ -11,6 +12,7 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final user = context.watch<AuthRepository>().user;
 
     return Scaffold(
       body: Center(
@@ -25,7 +27,10 @@ class HomeView extends StatelessWidget {
                 color: theme.colorScheme.primary,
               ),
               const SizedBox(height: 16),
-              Text(l10n.homeGreeting, style: theme.textTheme.titleLarge),
+              Text(
+                l10n.homeGreetingUser(user?.name ?? ''),
+                style: theme.textTheme.titleLarge,
+              ),
               const SizedBox(height: 4),
               Text(l10n.homeSubtitle, style: theme.textTheme.bodySmall),
             ],
