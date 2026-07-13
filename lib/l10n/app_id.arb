@@ -1,0 +1,23 @@
+{
+  "@@locale": "id",
+  "appTitle": "Berdikari",
+  "@appTitle": {
+    "description": "Nama aplikasi"
+  },
+  "homeGreeting": "Selamat datang di Berdikari",
+  "@homeGreeting": {
+    "description": "Sapaan di layar utama"
+  },
+  "homeSubtitle": "ERP sederhana untuk usaha Anda",
+  "@homeSubtitle": {
+    "description": "Subjudul di layar utama"
+  },
+  "genericError": "Terjadi kesalahan. Silakan coba lagi.",
+  "@genericError": {
+    "description": "Pesan kesalahan umum"
+  },
+  "retry": "Coba Lagi",
+  "@retry": {
+    "description": "Tombol coba lagi"
+  }
+}
