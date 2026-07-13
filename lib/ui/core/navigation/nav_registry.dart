@@ -122,6 +122,9 @@ List<NavItem> moreNavItems(AuthRepository auth) => navRegistry
     .toList();
 
 /// Route -> required permissions, for the router's deny-by-default guard.
+/// Non-registry routes (reached from within screens, not the nav) are
+/// listed explicitly.
 final Map<String, List<String>> routePermissions = {
   for (final item in navRegistry) item.route: item.permissions,
+  '/pos/orders': const ['pos.view', 'pos.open'],
 };

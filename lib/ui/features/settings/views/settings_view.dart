@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../data/repositories/auth_repository.dart';
+import '../../../../data/repositories/cart_repository.dart';
+import '../../../../data/repositories/shift_repository.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 
 /// Account hub: profile, password, logout. Mirrors the web's `/settings`.
@@ -12,6 +14,8 @@ class SettingsView extends StatelessWidget {
   Future<void> _confirmLogout(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
     final auth = context.read<AuthRepository>();
+    final cart = context.read<CartRepository>();
+    final shift = context.read<ShiftRepository>();
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -31,6 +35,9 @@ class SettingsView extends StatelessWidget {
       ),
     );
     if (confirmed == true) {
+      // The next user starts clean: no leftover cart or shift state.
+      cart.clear();
+      shift.reset();
       await auth.logout();
       // Router redirect takes over: unauthenticated -> /login.
     }

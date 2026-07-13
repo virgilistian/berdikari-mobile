@@ -192,5 +192,203 @@
   "logoutConfirmMessage": "Anda harus masuk kembali untuk menggunakan aplikasi.",
   "@logoutConfirmMessage": {
     "description": "Isi dialog konfirmasi keluar"
+  },
+  "posEmptyProducts": "Belum ada produk. Tambahkan produk di menu Katalog.",
+  "@posEmptyProducts": {
+    "description": "Pesan saat katalog kosong"
+  },
+  "categoryAll": "Semua",
+  "@categoryAll": {
+    "description": "Pil kategori: semua produk"
+  },
+  "cartTitle": "Keranjang",
+  "@cartTitle": {
+    "description": "Judul panel keranjang"
+  },
+  "cartEmpty": "Keranjang kosong",
+  "@cartEmpty": {
+    "description": "Pesan keranjang kosong"
+  },
+  "payButton": "Bayar",
+  "@payButton": {
+    "description": "Tombol bayar di POS"
+  },
+  "totalLabel": "Total",
+  "@totalLabel": {
+    "description": "Label total belanja"
+  },
+  "itemCount": "{count} item",
+  "@itemCount": {
+    "description": "Jumlah item di keranjang",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "paymentTitle": "Pembayaran",
+  "@paymentTitle": {
+    "description": "Judul lembar pembayaran"
+  },
+  "paymentMethodLabel": "Metode Pembayaran",
+  "@paymentMethodLabel": {
+    "description": "Label metode pembayaran"
+  },
+  "methodCash": "Tunai",
+  "@methodCash": {
+    "description": "Metode pembayaran tunai"
+  },
+  "methodQris": "QRIS",
+  "@methodQris": {
+    "description": "Metode pembayaran QRIS"
+  },
+  "methodTransfer": "Transfer",
+  "@methodTransfer": {
+    "description": "Metode pembayaran transfer"
+  },
+  "cashReceivedLabel": "Uang Diterima",
+  "@cashReceivedLabel": {
+    "description": "Label uang diterima"
+  },
+  "cashInsufficient": "Uang diterima kurang dari total.",
+  "@cashInsufficient": {
+    "description": "Validasi uang kurang"
+  },
+  "customerNameLabel": "Nama Pelanggan (opsional)",
+  "@customerNameLabel": {
+    "description": "Label nama pelanggan"
+  },
+  "processPayment": "Proses Pembayaran",
+  "@processPayment": {
+    "description": "Tombol proses pembayaran"
+  },
+  "receiptSuccess": "Transaksi Berhasil",
+  "@receiptSuccess": {
+    "description": "Judul struk sukses"
+  },
+  "changeLabel": "Kembalian",
+  "@changeLabel": {
+    "description": "Label kembalian"
+  },
+  "paidLabel": "Dibayar",
+  "@paidLabel": {
+    "description": "Label jumlah dibayar"
+  },
+  "newTransaction": "Transaksi Baru",
+  "@newTransaction": {
+    "description": "Tombol mulai transaksi baru"
+  },
+  "noActiveShiftTitle": "Belum ada shift aktif",
+  "@noActiveShiftTitle": {
+    "description": "Judul banner tanpa shift"
+  },
+  "noActiveShiftMessage": "Buka shift terlebih dahulu untuk mulai berjualan.",
+  "@noActiveShiftMessage": {
+    "description": "Pesan banner tanpa shift"
+  },
+  "openShiftButton": "Buka Shift",
+  "@openShiftButton": {
+    "description": "Tombol buka shift"
+  },
+  "closeShiftButton": "Tutup Shift",
+  "@closeShiftButton": {
+    "description": "Tombol tutup shift"
+  },
+  "openingCashLabel": "Kas Awal",
+  "@openingCashLabel": {
+    "description": "Label kas awal shift"
+  },
+  "openingCashRequired": "Kas awal wajib diisi.",
+  "@openingCashRequired": {
+    "description": "Validasi kas awal kosong"
+  },
+  "closingCashLabel": "Kas Akhir",
+  "@closingCashLabel": {
+    "description": "Label kas akhir shift"
+  },
+  "closingCashRequired": "Kas akhir wajib diisi.",
+  "@closingCashRequired": {
+    "description": "Validasi kas akhir kosong"
+  },
+  "closingNoteLabel": "Catatan (opsional)",
+  "@closingNoteLabel": {
+    "description": "Label catatan penutupan"
+  },
+  "shiftActiveBanner": "Shift aktif sejak {time}",
+  "@shiftActiveBanner": {
+    "description": "Banner shift aktif",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "transactionCountLabel": "Jumlah Transaksi",
+  "@transactionCountLabel": {
+    "description": "Label jumlah transaksi shift"
+  },
+  "totalSalesLabel": "Total Penjualan",
+  "@totalSalesLabel": {
+    "description": "Label total penjualan shift"
+  },
+  "expectedCashLabel": "Kas Seharusnya",
+  "@expectedCashLabel": {
+    "description": "Label kas seharusnya"
+  },
+  "cashDifferenceLabel": "Selisih",
+  "@cashDifferenceLabel": {
+    "description": "Label selisih kas"
+  },
+  "shiftClosedTitle": "Shift Ditutup",
+  "@shiftClosedTitle": {
+    "description": "Judul ringkasan shift ditutup"
+  },
+  "shiftSummaryDone": "Selesai",
+  "@shiftSummaryDone": {
+    "description": "Tombol selesai ringkasan shift"
+  },
+  "ordersTitle": "Riwayat Pesanan",
+  "@ordersTitle": {
+    "description": "Judul halaman riwayat pesanan"
+  },
+  "ordersEmpty": "Belum ada pesanan.",
+  "@ordersEmpty": {
+    "description": "Pesan daftar pesanan kosong"
+  },
+  "statusAll": "Semua",
+  "@statusAll": {
+    "description": "Filter status: semua"
+  },
+  "statusOpen": "Berjalan",
+  "@statusOpen": {
+    "description": "Status pesanan: open"
+  },
+  "statusCompleted": "Selesai",
+  "@statusCompleted": {
+    "description": "Status pesanan: completed"
+  },
+  "statusCancelled": "Dibatalkan",
+  "@statusCancelled": {
+    "description": "Status pesanan: cancelled"
+  },
+  "statusRefunded": "Dikembalikan",
+  "@statusRefunded": {
+    "description": "Status pesanan: refunded"
+  },
+  "paymentUnpaid": "Belum Dibayar",
+  "@paymentUnpaid": {
+    "description": "Status pembayaran: unpaid"
+  },
+  "paymentPartial": "Sebagian",
+  "@paymentPartial": {
+    "description": "Status pembayaran: partial"
+  },
+  "paymentPaid": "Lunas",
+  "@paymentPaid": {
+    "description": "Status pembayaran: paid"
+  },
+  "loadFailed": "Gagal memuat data.",
+  "@loadFailed": {
+    "description": "Pesan gagal memuat"
   }
 }

@@ -4,19 +4,31 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'data/repositories/auth_repository.dart';
+import 'data/repositories/cart_repository.dart';
+import 'data/repositories/catalog_repository.dart';
+import 'data/repositories/orders_repository.dart';
+import 'data/repositories/shift_repository.dart';
 import 'data/services/api_client.dart';
 import 'data/services/auth_service.dart';
+import 'data/services/catalog_service.dart';
+import 'data/services/sales_service.dart';
 import 'data/services/token_storage.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'routing/router.dart';
 import 'ui/core/theme/app_theme.dart';
 
 class BerdikariApp extends StatefulWidget {
-  const BerdikariApp({super.key, this.authRepository});
+  const BerdikariApp({
+    super.key,
+    this.authRepository,
+    this.catalogService,
+    this.salesService,
+  });
 
-  /// Test seam: inject a pre-configured repository (e.g. with an in-memory
-  /// token storage and fake service). Production leaves it null.
+  /// Test seams: inject pre-configured fakes. Production leaves them null.
   final AuthRepository? authRepository;
+  final CatalogService? catalogService;
+  final SalesService? salesService;
 
   @override
   State<BerdikariApp> createState() => _BerdikariAppState();
@@ -26,18 +38,21 @@ class _BerdikariAppState extends State<BerdikariApp> {
   late final TokenStorage _tokenStorage;
   late final ApiClient _apiClient;
   late final AuthRepository _authRepository;
+  late final CatalogRepository _catalogRepository;
+  late final CartRepository _cartRepository;
+  late final ShiftRepository _shiftRepository;
+  late final OrdersRepository _ordersRepository;
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    _tokenStorage = TokenStorage();
+    _apiClient = ApiClient(tokenProvider: _tokenStorage.read);
+
     if (widget.authRepository != null) {
       _authRepository = widget.authRepository!;
-      _tokenStorage = TokenStorage();
-      _apiClient = ApiClient(tokenProvider: _tokenStorage.read);
     } else {
-      _tokenStorage = TokenStorage();
-      _apiClient = ApiClient(tokenProvider: _tokenStorage.read);
       _authRepository = AuthRepository(
         service: AuthService(apiClient: _apiClient),
         tokenStorage: _tokenStorage,
@@ -46,6 +61,23 @@ class _BerdikariAppState extends State<BerdikariApp> {
       // redirect then lands on /login.
       _apiClient.onUnauthorized = _authRepository.clearSession;
     }
+
+    final catalogService =
+        widget.catalogService ?? CatalogService(apiClient: _apiClient);
+    final salesService =
+        widget.salesService ?? SalesService(apiClient: _apiClient);
+
+    _catalogRepository = CatalogRepository(catalogService: catalogService);
+    _cartRepository = CartRepository(
+      salesService: salesService,
+      authRepository: _authRepository,
+    );
+    _shiftRepository = ShiftRepository(salesService: salesService);
+    _ordersRepository = OrdersRepository(
+      salesService: salesService,
+      authRepository: _authRepository,
+    );
+
     _router = createRouter(_authRepository);
     _authRepository.restoreSession();
   }
@@ -63,6 +95,10 @@ class _BerdikariAppState extends State<BerdikariApp> {
         Provider<TokenStorage>.value(value: _tokenStorage),
         Provider<ApiClient>.value(value: _apiClient),
         ChangeNotifierProvider<AuthRepository>.value(value: _authRepository),
+        Provider<CatalogRepository>.value(value: _catalogRepository),
+        ChangeNotifierProvider<CartRepository>.value(value: _cartRepository),
+        ChangeNotifierProvider<ShiftRepository>.value(value: _shiftRepository),
+        Provider<OrdersRepository>.value(value: _ordersRepository),
       ],
       child: MaterialApp.router(
         title: 'Berdikari',
