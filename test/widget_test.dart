@@ -1,4 +1,5 @@
 import 'package:berdikari_mobile/app.dart';
+import 'package:berdikari_mobile/data/models/finance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -18,7 +19,20 @@ void main() {
   testWidgets('login flow authenticates and shows the permission-driven shell',
       (tester) async {
     final repo = fakeAuthRepository(user: sampleUser());
-    await tester.pumpWidget(BerdikariApp(authRepository: repo));
+    await tester.pumpWidget(BerdikariApp(
+      authRepository: repo,
+      salesService: FakeSalesService(),
+      inventoryService: FakeInventoryService(),
+      financeService: FakeFinanceService(
+        summary: const FinanceSummary(
+          totalIncome: 80000,
+          totalExpense: 30000,
+          net: 50000,
+          incomeByCategory: {},
+          expenseByCategory: {},
+        ),
+      ),
+    ));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -29,6 +43,9 @@ void main() {
 
     // Home greeting.
     expect(find.text('Halo, Ibu Sari'), findsOneWidget);
+    // Dashboard KPI wired to the (fake) finance summary.
+    expect(find.text('Kas Hari Ini'), findsOneWidget);
+    expect(find.text('Rp50.000'), findsOneWidget);
     // Bottom nav: cashier with finance.view + pos.* sees these...
     expect(find.text('Beranda'), findsOneWidget);
     expect(find.text('Keuangan'), findsOneWidget);
@@ -41,7 +58,12 @@ void main() {
   testWidgets('restored session skips login and opens the shell',
       (tester) async {
     final repo = fakeAuthRepository(user: sampleUser(), token: 'persisted');
-    await tester.pumpWidget(BerdikariApp(authRepository: repo));
+    await tester.pumpWidget(BerdikariApp(
+      authRepository: repo,
+      salesService: FakeSalesService(),
+      inventoryService: FakeInventoryService(),
+      financeService: FakeFinanceService(),
+    ));
     await tester.pumpAndSettle();
 
     expect(find.text('Halo, Ibu Sari'), findsOneWidget);
@@ -51,7 +73,12 @@ void main() {
   testWidgets('Lainnya sheet reaches Pengaturan (account hub)',
       (tester) async {
     final repo = fakeAuthRepository(user: sampleUser(), token: 'persisted');
-    await tester.pumpWidget(BerdikariApp(authRepository: repo));
+    await tester.pumpWidget(BerdikariApp(
+      authRepository: repo,
+      salesService: FakeSalesService(),
+      inventoryService: FakeInventoryService(),
+      financeService: FakeFinanceService(),
+    ));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Lainnya'));

@@ -8,6 +8,8 @@ import '../ui/core/widgets/placeholder_view.dart';
 import '../ui/core/widgets/splash_view.dart';
 import '../ui/features/auth/views/login_view.dart';
 import '../ui/features/catalog/views/catalog_view.dart';
+import '../ui/features/finance/views/finance_new_view.dart';
+import '../ui/features/finance/views/finance_view.dart';
 import '../ui/features/forbidden/views/forbidden_view.dart';
 import '../ui/features/home/views/home_view.dart';
 import '../ui/features/inventory/views/daily_stock_view.dart';
@@ -16,6 +18,7 @@ import '../ui/features/inventory/views/stock_valuation_view.dart';
 import '../ui/features/pos/views/orders_view.dart';
 import '../ui/features/pos/views/pos_view.dart';
 import '../ui/features/pos/views/shift_view.dart';
+import '../ui/features/reports/views/reports_view.dart';
 import '../ui/features/settings/views/password_view.dart';
 import '../ui/features/settings/views/profile_view.dart';
 import '../ui/features/settings/views/settings_view.dart';
@@ -32,6 +35,9 @@ abstract final class AppRoutes {
   static const inventory = '/inventory';
   static const inventoryNew = '/inventory/new';
   static const inventoryStock = '/inventory/stock';
+  static const finance = '/finance';
+  static const financeNew = '/finance/new';
+  static const reports = '/reports';
   static const settings = '/settings';
   static const settingsProfile = '/settings/profile';
   static const settingsPassword = '/settings/password';
@@ -45,6 +51,8 @@ const _implementedRoutes = {
   AppRoutes.posShift,
   AppRoutes.catalog,
   AppRoutes.inventory,
+  AppRoutes.finance,
+  AppRoutes.reports,
   AppRoutes.settings,
 };
 
@@ -130,6 +138,18 @@ GoRouter createRouter(AuthRepository auth) => GoRouter(
             GoRoute(
               path: AppRoutes.inventoryStock,
               builder: (context, state) => const StockValuationView(),
+            ),
+            GoRoute(
+              path: AppRoutes.finance,
+              builder: (context, state) => const FinanceView(),
+            ),
+            GoRoute(
+              path: AppRoutes.financeNew,
+              builder: (context, state) => const FinanceNewView(),
+            ),
+            GoRoute(
+              path: AppRoutes.reports,
+              builder: (context, state) => const ReportsView(),
             ),
             GoRoute(
               path: AppRoutes.settings,

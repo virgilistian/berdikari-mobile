@@ -1,13 +1,16 @@
 import 'package:berdikari_mobile/data/models/auth_user.dart';
 import 'package:berdikari_mobile/data/models/daily_stock.dart';
+import 'package:berdikari_mobile/data/models/finance.dart';
 import 'package:berdikari_mobile/data/models/order.dart';
 import 'package:berdikari_mobile/data/models/product.dart';
+import 'package:berdikari_mobile/data/models/sales_summary.dart';
 import 'package:berdikari_mobile/data/models/shift.dart';
 import 'package:berdikari_mobile/data/models/stock.dart';
 import 'package:berdikari_mobile/data/repositories/auth_repository.dart';
 import 'package:berdikari_mobile/data/services/api_client.dart';
 import 'package:berdikari_mobile/data/services/auth_service.dart';
 import 'package:berdikari_mobile/data/services/catalog_service.dart';
+import 'package:berdikari_mobile/data/services/finance_service.dart';
 import 'package:berdikari_mobile/data/services/inventory_service.dart';
 import 'package:berdikari_mobile/data/services/sales_service.dart';
 import 'package:berdikari_mobile/data/services/token_storage.dart';
@@ -215,6 +218,7 @@ class FakeInventoryService extends InventoryService {
     List<StockRow>? stockRows,
     StockSummary? summary,
     List<StockMovement>? movements,
+    List<StockRow>? lowStock,
   })  : todayStock = todayStock ?? [],
         stockProducts = stockProducts ?? [],
         stockRows = stockRows ?? [],
@@ -226,6 +230,7 @@ class FakeInventoryService extends InventoryService {
               lowStockCount: 0,
             ),
         movements = movements ?? [],
+        lowStock = lowStock ?? [],
         super(apiClient: ApiClient(tokenProvider: () async => null));
 
   List<DailyStockItem> todayStock;
@@ -233,10 +238,14 @@ class FakeInventoryService extends InventoryService {
   List<StockRow> stockRows;
   StockSummary summary;
   List<StockMovement> movements;
+  List<StockRow> lowStock;
   Map<String, dynamic>? lastOpenPayload;
   Map<String, dynamic>? lastReceivePayload;
   Map<String, dynamic>? lastAdjustPayload;
   Map<String, dynamic>? lastMinStockPayload;
+
+  @override
+  Future<List<StockRow>> fetchLowStock({String? businessId}) async => lowStock;
 
   @override
   Future<List<DailyStockItem>> fetchTodayStock({String? businessId}) async =>
@@ -442,10 +451,32 @@ class FakeSalesService extends SalesService {
   }
 
   @override
-  Future<List<Order>> fetchOrders({String? businessId, String? status}) async {
-    if (status == null || status.isEmpty) return orders;
-    return orders.where((o) => o.status == status).toList();
+  Future<List<Order>> fetchOrders({
+    String? businessId,
+    String? status,
+    String? date,
+  }) async {
+    var result = orders;
+    if (status != null && status.isNotEmpty) {
+      result = result.where((o) => o.status == status).toList();
+    }
+    if (date != null) {
+      result = result
+          .where((o) => o.createdAt.toIso8601String().split('T').first == date)
+          .toList();
+    }
+    return result;
   }
+
+  SalesSummary summary = SalesSummary.empty;
+
+  @override
+  Future<SalesSummary> fetchSummary({
+    String? businessId,
+    String? from,
+    String? to,
+  }) async =>
+      summary;
 
   @override
   Future<CashierShift?> fetchActiveShift() async => activeShift;
@@ -501,4 +532,84 @@ CashierShift sampleShift({
       openedAt: DateTime.now(),
       closedAt: status == 'closed' ? DateTime.now() : null,
       cashierName: 'Ibu Sari',
+    );
+
+/// FinanceService that answers from in-memory fixtures instead of HTTP.
+class FakeFinanceService extends FinanceService {
+  FakeFinanceService({List<FinanceEntry>? entries, FinanceSummary? summary})
+      : entries = entries ?? [],
+        summary = summary ?? FinanceSummary.empty,
+        super(apiClient: ApiClient(tokenProvider: () async => null));
+
+  List<FinanceEntry> entries;
+  FinanceSummary summary;
+  int _nextId = 100;
+  Map<String, dynamic>? lastCreatePayload;
+
+  @override
+  Future<List<FinanceEntry>> fetchEntries({
+    String? businessId,
+    String? type,
+    String? category,
+    String? from,
+    String? to,
+  }) async {
+    if (type == null || type.isEmpty) return entries;
+    return entries.where((e) => e.type == type).toList();
+  }
+
+  @override
+  Future<FinanceSummary> fetchSummary({
+    String? businessId,
+    String? from,
+    String? to,
+  }) async =>
+      summary;
+
+  @override
+  Future<FinanceEntry> createEntry({
+    String? businessId,
+    required String type,
+    required int amount,
+    required String category,
+    String? note,
+  }) async {
+    lastCreatePayload = {
+      'type': type,
+      'amount': amount,
+      'category': category,
+      'note': note,
+    };
+    final entry = FinanceEntry(
+      id: 'f${_nextId++}',
+      type: type,
+      amount: amount,
+      category: category,
+      note: note,
+      occurredAt: DateTime.now(),
+    );
+    entries = [...entries, entry];
+    return entry;
+  }
+
+  @override
+  Future<void> deleteEntry(String id) async {
+    entries = entries.where((e) => e.id != id).toList();
+  }
+}
+
+FinanceEntry sampleFinanceEntry({
+  String id = 'f1',
+  String type = 'expense',
+  int amount = 20000,
+  String category = 'Belanja Bahan',
+  String? note,
+}) =>
+    FinanceEntry(
+      id: id,
+      type: type,
+      amount: amount,
+      category: category,
+      note: note,
+      occurredAt: DateTime.now(),
     );

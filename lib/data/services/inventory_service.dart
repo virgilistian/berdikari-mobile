@@ -122,6 +122,19 @@ class InventoryService {
         'min_stock': minStock,
       });
 
+  /// `GET /inventory/low-stock` — lighter than [fetchStock] for screens
+  /// (dashboard, reports) that only need the low-stock count/list.
+  Future<List<StockRow>> fetchLowStock({String? businessId}) async {
+    final response = await _api.get(
+      '/inventory/low-stock',
+      query: {'business_id': ?businessId},
+    );
+    return (response['data'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(StockRow.fromJson)
+        .toList();
+  }
+
   Future<List<StockMovement>> fetchMovements({
     String? businessId,
     required String productId,
