@@ -9,6 +9,9 @@ import '../ui/core/widgets/splash_view.dart';
 import '../ui/features/auth/views/login_view.dart';
 import '../ui/features/forbidden/views/forbidden_view.dart';
 import '../ui/features/home/views/home_view.dart';
+import '../ui/features/pos/views/orders_view.dart';
+import '../ui/features/pos/views/pos_view.dart';
+import '../ui/features/pos/views/shift_view.dart';
 import '../ui/features/settings/views/password_view.dart';
 import '../ui/features/settings/views/profile_view.dart';
 import '../ui/features/settings/views/settings_view.dart';
@@ -18,6 +21,9 @@ abstract final class AppRoutes {
   static const login = '/login';
   static const forbidden = '/403';
   static const home = '/';
+  static const pos = '/pos';
+  static const posShift = '/pos/shift';
+  static const posOrders = '/pos/orders';
   static const settings = '/settings';
   static const settingsProfile = '/settings/profile';
   static const settingsPassword = '/settings/password';
@@ -27,6 +33,8 @@ abstract final class AppRoutes {
 /// nav registry renders a "Segera hadir" placeholder until its phase lands.
 const _implementedRoutes = {
   AppRoutes.home,
+  AppRoutes.pos,
+  AppRoutes.posShift,
   AppRoutes.settings,
 };
 
@@ -84,6 +92,18 @@ GoRouter createRouter(AuthRepository auth) => GoRouter(
             GoRoute(
               path: AppRoutes.home,
               builder: (context, state) => const HomeView(),
+            ),
+            GoRoute(
+              path: AppRoutes.pos,
+              builder: (context, state) => const PosView(),
+            ),
+            GoRoute(
+              path: AppRoutes.posShift,
+              builder: (context, state) => const ShiftView(),
+            ),
+            GoRoute(
+              path: AppRoutes.posOrders,
+              builder: (context, state) => const OrdersView(),
             ),
             GoRoute(
               path: AppRoutes.settings,
