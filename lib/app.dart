@@ -6,11 +6,14 @@ import 'package:provider/provider.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/cart_repository.dart';
 import 'data/repositories/catalog_repository.dart';
+import 'data/repositories/daily_stock_repository.dart';
 import 'data/repositories/orders_repository.dart';
 import 'data/repositories/shift_repository.dart';
+import 'data/repositories/stock_repository.dart';
 import 'data/services/api_client.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/catalog_service.dart';
+import 'data/services/inventory_service.dart';
 import 'data/services/sales_service.dart';
 import 'data/services/token_storage.dart';
 import 'l10n/generated/app_localizations.dart';
@@ -23,12 +26,14 @@ class BerdikariApp extends StatefulWidget {
     this.authRepository,
     this.catalogService,
     this.salesService,
+    this.inventoryService,
   });
 
   /// Test seams: inject pre-configured fakes. Production leaves them null.
   final AuthRepository? authRepository;
   final CatalogService? catalogService;
   final SalesService? salesService;
+  final InventoryService? inventoryService;
 
   @override
   State<BerdikariApp> createState() => _BerdikariAppState();
@@ -42,6 +47,8 @@ class _BerdikariAppState extends State<BerdikariApp> {
   late final CartRepository _cartRepository;
   late final ShiftRepository _shiftRepository;
   late final OrdersRepository _ordersRepository;
+  late final DailyStockRepository _dailyStockRepository;
+  late final StockRepository _stockRepository;
   late final GoRouter _router;
 
   @override
@@ -66,6 +73,8 @@ class _BerdikariAppState extends State<BerdikariApp> {
         widget.catalogService ?? CatalogService(apiClient: _apiClient);
     final salesService =
         widget.salesService ?? SalesService(apiClient: _apiClient);
+    final inventoryService =
+        widget.inventoryService ?? InventoryService(apiClient: _apiClient);
 
     _catalogRepository = CatalogRepository(catalogService: catalogService);
     _cartRepository = CartRepository(
@@ -75,6 +84,14 @@ class _BerdikariAppState extends State<BerdikariApp> {
     _shiftRepository = ShiftRepository(salesService: salesService);
     _ordersRepository = OrdersRepository(
       salesService: salesService,
+      authRepository: _authRepository,
+    );
+    _dailyStockRepository = DailyStockRepository(
+      inventoryService: inventoryService,
+      authRepository: _authRepository,
+    );
+    _stockRepository = StockRepository(
+      inventoryService: inventoryService,
       authRepository: _authRepository,
     );
 
@@ -99,6 +116,9 @@ class _BerdikariAppState extends State<BerdikariApp> {
         ChangeNotifierProvider<CartRepository>.value(value: _cartRepository),
         ChangeNotifierProvider<ShiftRepository>.value(value: _shiftRepository),
         Provider<OrdersRepository>.value(value: _ordersRepository),
+        ChangeNotifierProvider<DailyStockRepository>.value(
+            value: _dailyStockRepository),
+        ChangeNotifierProvider<StockRepository>.value(value: _stockRepository),
       ],
       child: MaterialApp.router(
         title: 'Berdikari',

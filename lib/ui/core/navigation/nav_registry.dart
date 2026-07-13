@@ -127,4 +127,6 @@ List<NavItem> moreNavItems(AuthRepository auth) => navRegistry
 final Map<String, List<String>> routePermissions = {
   for (final item in navRegistry) item.route: item.permissions,
   '/pos/orders': const ['pos.view', 'pos.open'],
+  '/inventory/new': const ['inventory.create'],
+  '/inventory/stock': const ['inventory.view'],
 };

@@ -7,8 +7,12 @@ import '../ui/core/navigation/nav_registry.dart';
 import '../ui/core/widgets/placeholder_view.dart';
 import '../ui/core/widgets/splash_view.dart';
 import '../ui/features/auth/views/login_view.dart';
+import '../ui/features/catalog/views/catalog_view.dart';
 import '../ui/features/forbidden/views/forbidden_view.dart';
 import '../ui/features/home/views/home_view.dart';
+import '../ui/features/inventory/views/daily_stock_view.dart';
+import '../ui/features/inventory/views/open_stock_view.dart';
+import '../ui/features/inventory/views/stock_valuation_view.dart';
 import '../ui/features/pos/views/orders_view.dart';
 import '../ui/features/pos/views/pos_view.dart';
 import '../ui/features/pos/views/shift_view.dart';
@@ -24,6 +28,10 @@ abstract final class AppRoutes {
   static const pos = '/pos';
   static const posShift = '/pos/shift';
   static const posOrders = '/pos/orders';
+  static const catalog = '/catalog';
+  static const inventory = '/inventory';
+  static const inventoryNew = '/inventory/new';
+  static const inventoryStock = '/inventory/stock';
   static const settings = '/settings';
   static const settingsProfile = '/settings/profile';
   static const settingsPassword = '/settings/password';
@@ -35,6 +43,8 @@ const _implementedRoutes = {
   AppRoutes.home,
   AppRoutes.pos,
   AppRoutes.posShift,
+  AppRoutes.catalog,
+  AppRoutes.inventory,
   AppRoutes.settings,
 };
 
@@ -104,6 +114,22 @@ GoRouter createRouter(AuthRepository auth) => GoRouter(
             GoRoute(
               path: AppRoutes.posOrders,
               builder: (context, state) => const OrdersView(),
+            ),
+            GoRoute(
+              path: AppRoutes.catalog,
+              builder: (context, state) => const CatalogView(),
+            ),
+            GoRoute(
+              path: AppRoutes.inventory,
+              builder: (context, state) => const DailyStockView(),
+            ),
+            GoRoute(
+              path: AppRoutes.inventoryNew,
+              builder: (context, state) => const OpenStockView(),
+            ),
+            GoRoute(
+              path: AppRoutes.inventoryStock,
+              builder: (context, state) => const StockValuationView(),
             ),
             GoRoute(
               path: AppRoutes.settings,
