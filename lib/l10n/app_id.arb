@@ -390,5 +390,360 @@
   "loadFailed": "Gagal memuat data.",
   "@loadFailed": {
     "description": "Pesan gagal memuat"
+  },
+  "catalogTitle": "Katalog Produk",
+  "@catalogTitle": {
+    "description": "Judul halaman katalog"
+  },
+  "catalogSearchHint": "Cari produk...",
+  "@catalogSearchHint": {
+    "description": "Placeholder pencarian produk"
+  },
+  "catalogEmptyTitle": "Belum ada produk",
+  "@catalogEmptyTitle": {
+    "description": "Judul katalog kosong"
+  },
+  "catalogEmptyMessage": "Tambahkan produk pertama ke katalog Anda",
+  "@catalogEmptyMessage": {
+    "description": "Pesan katalog kosong"
+  },
+  "catalogSearchEmptyTitle": "Produk tidak ditemukan",
+  "@catalogSearchEmptyTitle": {
+    "description": "Judul hasil pencarian kosong"
+  },
+  "catalogSearchEmptyMessage": "Coba kata kunci atau kategori yang berbeda",
+  "@catalogSearchEmptyMessage": {
+    "description": "Pesan hasil pencarian kosong"
+  },
+  "clearFilter": "Hapus filter",
+  "@clearFilter": {
+    "description": "Tombol hapus filter"
+  },
+  "addProduct": "Tambah Produk",
+  "@addProduct": {
+    "description": "Tombol tambah produk"
+  },
+  "editProduct": "Ubah Produk",
+  "@editProduct": {
+    "description": "Judul form ubah produk"
+  },
+  "newProduct": "Produk Baru",
+  "@newProduct": {
+    "description": "Judul form produk baru"
+  },
+  "productNameLabel": "Nama produk",
+  "@productNameLabel": {
+    "description": "Label nama produk"
+  },
+  "productNameHint": "mis. Nasi Kucing Teri",
+  "@productNameHint": {
+    "description": "Placeholder nama produk"
+  },
+  "categoryLabel": "Kategori",
+  "@categoryLabel": {
+    "description": "Label kategori"
+  },
+  "noCategoryOption": "Tanpa kategori",
+  "@noCategoryOption": {
+    "description": "Opsi tanpa kategori"
+  },
+  "noCategoryLabel": "Tanpa kategori",
+  "@noCategoryLabel": {
+    "description": "Label produk tanpa kategori"
+  },
+  "createNewCategory": "Buat baru",
+  "@createNewCategory": {
+    "description": "Tombol buat kategori baru"
+  },
+  "newCategoryHint": "Nama kategori baru",
+  "@newCategoryHint": {
+    "description": "Placeholder kategori baru"
+  },
+  "sellPriceLabel": "Harga jual",
+  "@sellPriceLabel": {
+    "description": "Label harga jual"
+  },
+  "sellPriceHint": "Harga yang Anda tawarkan ke pembeli",
+  "@sellPriceHint": {
+    "description": "Penjelasan harga jual"
+  },
+  "sellPriceRequired": "Harga jual wajib diisi.",
+  "@sellPriceRequired": {
+    "description": "Validasi harga jual kosong"
+  },
+  "costPriceLabel": "HPP (modal)",
+  "@costPriceLabel": {
+    "description": "Label harga pokok produksi"
+  },
+  "costPriceHint": "Modal produksi per unit",
+  "@costPriceHint": {
+    "description": "Penjelasan HPP"
+  },
+  "marginEstimate": "Estimasi laba: {amount}",
+  "@marginEstimate": {
+    "description": "Estimasi margin laba",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "productActiveLabel": "Produk aktif dijual",
+  "@productActiveLabel": {
+    "description": "Label toggle produk aktif"
+  },
+  "inactiveLabel": "Nonaktif",
+  "@inactiveLabel": {
+    "description": "Penanda produk nonaktif"
+  },
+  "deleteProduct": "Hapus produk",
+  "@deleteProduct": {
+    "description": "Tombol hapus produk"
+  },
+  "deleteProductConfirmTitle": "Hapus produk?",
+  "@deleteProductConfirmTitle": {
+    "description": "Judul konfirmasi hapus produk"
+  },
+  "deleteProductConfirmMessage": "Produk {name} akan dihapus dari katalog.",
+  "@deleteProductConfirmMessage": {
+    "description": "Isi konfirmasi hapus produk",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "Hapus",
+  "@delete": {
+    "description": "Tombol hapus"
+  },
+  "dailyStockTitle": "Stok Harian",
+  "@dailyStockTitle": {
+    "description": "Judul halaman stok harian"
+  },
+  "stockValuationLink": "Stok & Valuasi",
+  "@stockValuationLink": {
+    "description": "Tautan ke halaman stok & valuasi"
+  },
+  "openStock": "Buka Stok",
+  "@openStock": {
+    "description": "Tombol buka stok"
+  },
+  "openStockToday": "Buka Stok Hari Ini",
+  "@openStockToday": {
+    "description": "Tombol buka stok hari ini"
+  },
+  "closeToday": "Tutup Hari Ini",
+  "@closeToday": {
+    "description": "Tombol tutup hari ini"
+  },
+  "dailyStockEmptyTitle": "Stok hari ini belum dibuka",
+  "@dailyStockEmptyTitle": {
+    "description": "Judul stok harian kosong"
+  },
+  "dailyStockEmptyMessage": "Catat stok awal sebelum toko buka",
+  "@dailyStockEmptyMessage": {
+    "description": "Pesan stok harian kosong"
+  },
+  "dailyStockClosedBanner": "Hari telah ditutup — Rekap akhir hari",
+  "@dailyStockClosedBanner": {
+    "description": "Banner hari sudah ditutup"
+  },
+  "columnMenu": "Menu",
+  "@columnMenu": {
+    "description": "Kolom nama menu"
+  },
+  "columnOpen": "Buka",
+  "@columnOpen": {
+    "description": "Kolom stok buka"
+  },
+  "columnSold": "Terjual",
+  "@columnSold": {
+    "description": "Kolom terjual"
+  },
+  "columnRemaining": "Sisa",
+  "@columnRemaining": {
+    "description": "Kolom sisa stok"
+  },
+  "columnClosing": "Tutup",
+  "@columnClosing": {
+    "description": "Kolom stok tutup"
+  },
+  "columnTotal": "Total",
+  "@columnTotal": {
+    "description": "Baris total"
+  },
+  "openStockInstruction": "Masukkan jumlah stok awal untuk setiap menu sebelum toko buka.",
+  "@openStockInstruction": {
+    "description": "Instruksi buka stok"
+  },
+  "openStockEmptyProducts": "Belum ada produk aktif di katalog.",
+  "@openStockEmptyProducts": {
+    "description": "Pesan tidak ada produk untuk buka stok"
+  },
+  "goToCatalog": "Tambah produk di Katalog",
+  "@goToCatalog": {
+    "description": "Tautan ke katalog"
+  },
+  "currentStockLabel": "Stok",
+  "@currentStockLabel": {
+    "description": "Label stok saat ini"
+  },
+  "totalStockOpened": "Total stok dibuka",
+  "@totalStockOpened": {
+    "description": "Label total stok dibuka"
+  },
+  "unitPcs": "{count} pcs",
+  "@unitPcs": {
+    "description": "Satuan pcs dengan jumlah",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuCount": "{count} menu",
+  "@menuCount": {
+    "description": "Jumlah menu",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stockValuationTitle": "Stok & Valuasi",
+  "@stockValuationTitle": {
+    "description": "Judul halaman stok & valuasi"
+  },
+  "dailyStockLink": "Stok Harian",
+  "@dailyStockLink": {
+    "description": "Tautan ke halaman stok harian"
+  },
+  "stockValueLabel": "Nilai Stok (Modal)",
+  "@stockValueLabel": {
+    "description": "Label nilai stok modal"
+  },
+  "retailValueLabel": "Nilai Jual",
+  "@retailValueLabel": {
+    "description": "Label nilai jual"
+  },
+  "totalProductsLabel": "Total Produk",
+  "@totalProductsLabel": {
+    "description": "Label total produk"
+  },
+  "lowStockLabel": "Stok Menipis",
+  "@lowStockLabel": {
+    "description": "Label jumlah stok menipis"
+  },
+  "lowStockAlert": "{count} produk perlu segera diisi ulang",
+  "@lowStockAlert": {
+    "description": "Peringatan stok menipis",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lowStockBadge": "Menipis",
+  "@lowStockBadge": {
+    "description": "Badge stok menipis"
+  },
+  "minStockShort": "min {min}",
+  "@minStockShort": {
+    "description": "Ambang batas stok minimum singkat",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "remainingOfMin": "sisa {qty} / min {min}",
+  "@remainingOfMin": {
+    "description": "Sisa stok dari ambang minimum",
+    "placeholders": {
+      "qty": {
+        "type": "int"
+      },
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "stockEmptyTitle": "Belum ada stok",
+  "@stockEmptyTitle": {
+    "description": "Judul stok kosong"
+  },
+  "stockEmptyMessage": "Terima stok masuk untuk mulai memantau inventori",
+  "@stockEmptyMessage": {
+    "description": "Pesan stok kosong"
+  },
+  "receiveAction": "Terima",
+  "@receiveAction": {
+    "description": "Tombol terima stok"
+  },
+  "adjustAction": "Sesuaikan",
+  "@adjustAction": {
+    "description": "Tombol sesuaikan stok"
+  },
+  "receiveStockTitle": "Stok Masuk",
+  "@receiveStockTitle": {
+    "description": "Judul aksi terima stok"
+  },
+  "adjustStockTitle": "Sesuaikan Stok",
+  "@adjustStockTitle": {
+    "description": "Judul aksi sesuaikan stok"
+  },
+  "currentStockOf": "stok saat ini {qty}",
+  "@currentStockOf": {
+    "description": "Info stok saat ini pada aksi",
+    "placeholders": {
+      "qty": {
+        "type": "int"
+      }
+    }
+  },
+  "incomingQtyLabel": "Jumlah masuk",
+  "@incomingQtyLabel": {
+    "description": "Label jumlah stok masuk"
+  },
+  "actualQtyLabel": "Jumlah stok sebenarnya",
+  "@actualQtyLabel": {
+    "description": "Label jumlah stok sebenarnya"
+  },
+  "minStockThresholdLabel": "Ambang batas stok menipis",
+  "@minStockThresholdLabel": {
+    "description": "Label ambang batas stok"
+  },
+  "reasonOptionalLabel": "Catatan (opsional)",
+  "@reasonOptionalLabel": {
+    "description": "Label catatan opsional"
+  },
+  "reasonReceiveHint": "mis. Belanja pasar",
+  "@reasonReceiveHint": {
+    "description": "Placeholder catatan terima stok"
+  },
+  "reasonAdjustHint": "mis. Barang rusak",
+  "@reasonAdjustHint": {
+    "description": "Placeholder catatan sesuaikan stok"
+  },
+  "movementHistoryTitle": "Riwayat Pergerakan",
+  "@movementHistoryTitle": {
+    "description": "Judul riwayat pergerakan stok"
+  },
+  "movementEmpty": "Belum ada pergerakan stok.",
+  "@movementEmpty": {
+    "description": "Pesan riwayat pergerakan kosong"
+  },
+  "movementIn": "Stok Masuk",
+  "@movementIn": {
+    "description": "Jenis pergerakan: masuk"
+  },
+  "movementOut": "Stok Keluar",
+  "@movementOut": {
+    "description": "Jenis pergerakan: keluar"
+  },
+  "movementAdjustment": "Penyesuaian",
+  "@movementAdjustment": {
+    "description": "Jenis pergerakan: penyesuaian"
   }
 }
