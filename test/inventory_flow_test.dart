@@ -41,7 +41,7 @@ void main() {
     );
     final inventoryService = FakeInventoryService(stockProducts: [
       const ProductForStock(
-          id: 'p1', name: 'Es Teh', price: 5000, currentStock: 0),
+          id: 'p1', name: 'Es Teh', price: 5000, imageUrl: null, currentStock: 0, minStock: 0),
     ]);
     await tester.pumpWidget(BerdikariApp(
       authRepository: auth,
@@ -80,7 +80,11 @@ void main() {
         id: 'ds1',
         productId: 'p1',
         productName: 'Es Teh',
+        price: null,
+        imageUrl: null,
         openingQty: 10,
+        adjustmentQty: 0,
+        adjustmentNote: null,
         soldQty: 3,
         closingQty: null,
         status: 'open',

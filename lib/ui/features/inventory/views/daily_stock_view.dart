@@ -37,6 +37,11 @@ class _DailyStockScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.dailyStockTitle),
         actions: [
+          IconButton(
+            tooltip: l10n.dailyStockHistoryTitle,
+            icon: const Icon(Icons.history),
+            onPressed: () => context.push('/inventory/history'),
+          ),
           TextButton.icon(
             onPressed: () => context.go('/inventory/stock'),
             icon: const Icon(Icons.bar_chart, size: 18),

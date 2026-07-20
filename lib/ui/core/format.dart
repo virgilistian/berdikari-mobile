@@ -11,6 +11,12 @@ String formatRupiah(int amount) {
 /// "15.000" without the currency prefix, for input fields.
 String formatRupiahDigits(int amount) => _rupiah.format(amount);
 
+/// "+Rp15.000" / "-Rp15.000" — always shows a sign, for diff/delta values.
+String formatSignedRupiah(int amount) {
+  final prefix = amount > 0 ? '+' : '';
+  return '$prefix${formatRupiah(amount)}';
+}
+
 const _indonesianWeekdays = [
   'Senin',
   'Selasa',

@@ -124,4 +124,25 @@ class FinanceRepository extends ChangeNotifier {
       await fetchAll();
     }
   }
+
+  /// Records an out-of-till operational expense against an active cashier
+  /// shift (`pos.expense`) — does not touch the global [entries] list, so
+  /// this does not refetch [fetchAll].
+  Future<FinanceEntry> createShiftExpense({
+    required String shiftId,
+    required int amount,
+    required String category,
+    String? note,
+  }) =>
+      _finance.createEntry(
+        businessId: _auth.user?.businessId,
+        type: 'expense',
+        amount: amount,
+        category: category,
+        note: note,
+        shiftId: shiftId,
+      );
+
+  Future<List<FinanceEntry>> fetchShiftExpenses(String shiftId) =>
+      _finance.fetchShiftExpenses(shiftId);
 }

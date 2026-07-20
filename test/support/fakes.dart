@@ -9,6 +9,7 @@ import 'package:berdikari_mobile/data/models/sales_summary.dart';
 import 'package:berdikari_mobile/data/models/shift.dart';
 import 'package:berdikari_mobile/data/models/stock.dart';
 import 'package:berdikari_mobile/data/repositories/auth_repository.dart';
+import 'package:berdikari_mobile/data/repositories/daily_stock_repository.dart';
 import 'package:berdikari_mobile/data/services/api_client.dart';
 import 'package:berdikari_mobile/data/services/auth_service.dart';
 import 'package:berdikari_mobile/data/services/catalog_service.dart';
@@ -270,13 +271,45 @@ class FakeInventoryService extends InventoryService {
           id: 'ds-${item.productId}',
           productId: item.productId,
           productName: item.productName,
+          price: null,
+          imageUrl: null,
           openingQty: item.openingQty,
+          adjustmentQty: 0,
+          adjustmentNote: null,
           soldQty: 0,
           closingQty: null,
           status: 'open',
         ),
     ];
     return todayStock;
+  }
+
+  @override
+  Future<List<DailyStockItem>> openDayFor({
+    String? businessId,
+    required String date,
+    required List<({String productId, String productName, int openingQty})>
+        items,
+  }) async {
+    lastOpenPayload = {'business_id': businessId, 'date': date, 'items': items};
+    final result = [
+      for (final item in items)
+        DailyStockItem(
+          id: 'ds-${item.productId}',
+          productId: item.productId,
+          productName: item.productName,
+          price: null,
+          imageUrl: null,
+          openingQty: item.openingQty,
+          adjustmentQty: 0,
+          adjustmentNote: null,
+          soldQty: 0,
+          closingQty: null,
+          status: date == DailyStockRepository.today ? 'open' : 'draft',
+        ),
+    ];
+    if (date == DailyStockRepository.today) todayStock = result;
+    return result;
   }
 
   @override
@@ -287,13 +320,73 @@ class FakeInventoryService extends InventoryService {
           id: item.id,
           productId: item.productId,
           productName: item.productName,
+          price: item.price,
+          imageUrl: item.imageUrl,
           openingQty: item.openingQty,
+          adjustmentQty: item.adjustmentQty,
+          adjustmentNote: item.adjustmentNote,
           soldQty: item.soldQty,
           closingQty: item.remainingQty,
           status: 'closed',
         ),
     ];
     return todayStock;
+  }
+
+  List<DailyStockHistoryRow> history = [];
+  Map<String, List<DailyStockItem>> dayDetails = {};
+  Map<String, dynamic>? lastAdjustDailyStockPayload;
+  String? lastDeletedDate;
+
+  @override
+  Future<List<DailyStockHistoryRow>> fetchHistory({String? businessId}) async =>
+      history;
+
+  @override
+  Future<List<DailyStockItem>> fetchDayDetail({
+    String? businessId,
+    required String date,
+  }) async =>
+      dayDetails[date] ?? const [];
+
+  @override
+  Future<DailyStockItem> adjustDailyStock({
+    String? businessId,
+    required String date,
+    required String productId,
+    required int adjustmentQty,
+    String? adjustmentNote,
+  }) async {
+    lastAdjustDailyStockPayload = {
+      'date': date,
+      'product_id': productId,
+      'adjustment_qty': adjustmentQty,
+      'adjustment_note': adjustmentNote,
+    };
+    final existing = todayStock.firstWhere((s) => s.productId == productId);
+    final updated = DailyStockItem(
+      id: existing.id,
+      productId: existing.productId,
+      productName: existing.productName,
+      price: existing.price,
+      imageUrl: existing.imageUrl,
+      openingQty: existing.openingQty,
+      adjustmentQty: existing.adjustmentQty + adjustmentQty,
+      adjustmentNote: adjustmentNote,
+      soldQty: existing.soldQty,
+      closingQty: existing.closingQty,
+      status: existing.status,
+    );
+    todayStock = [
+      for (final s in todayStock)
+        if (s.productId == productId) updated else s,
+    ];
+    return updated;
+  }
+
+  @override
+  Future<void> deleteDailyStockDay({String? businessId, required String date}) async {
+    lastDeletedDate = date;
   }
 
   @override
@@ -541,8 +634,12 @@ CashierShift sampleShift({
   int? expectedCash,
   int? cashDifference,
   int transactionCount = 0,
+  int totalItemsSold = 0,
   int totalSales = 0,
+  int totalExpenses = 0,
+  int? netIncome,
   String? closingNote,
+  List<ShiftStockSummaryItem> stockSummary = const [],
 }) =>
     CashierShift(
       id: id,
@@ -552,11 +649,15 @@ CashierShift sampleShift({
       expectedCash: expectedCash,
       cashDifference: cashDifference,
       transactionCount: transactionCount,
+      totalItemsSold: totalItemsSold,
       totalSales: totalSales,
+      totalExpenses: totalExpenses,
+      netIncome: netIncome,
       closingNote: closingNote,
       openedAt: DateTime.now(),
       closedAt: status == 'closed' ? DateTime.now() : null,
       cashierName: 'Ibu Sari',
+      stockSummary: stockSummary,
     );
 
 /// FinanceService that answers from in-memory fixtures instead of HTTP.
@@ -599,6 +700,7 @@ class FakeFinanceService extends FinanceService {
     required String category,
     String? note,
     String? occurredAt,
+    String? shiftId,
   }) async {
     lastCreatePayload = {
       'type': type,
@@ -606,6 +708,7 @@ class FakeFinanceService extends FinanceService {
       'category': category,
       'note': note,
       'occurred_at': occurredAt,
+      'shift_id': shiftId,
     };
     final entry = FinanceEntry(
       id: 'f${_nextId++}',
@@ -614,10 +717,16 @@ class FakeFinanceService extends FinanceService {
       category: category,
       note: note,
       occurredAt: occurredAt != null ? DateTime.parse(occurredAt) : DateTime.now(),
+      sourceType: shiftId != null ? 'shift_expense' : 'manual',
+      sourceId: shiftId,
     );
     entries = [...entries, entry];
     return entry;
   }
+
+  @override
+  Future<List<FinanceEntry>> fetchShiftExpenses(String shiftId) async =>
+      entries.where((e) => e.sourceType == 'shift_expense' && e.sourceId == shiftId).toList();
 
   @override
   Future<void> deleteEntry(String id) async {

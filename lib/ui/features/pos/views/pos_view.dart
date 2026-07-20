@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../data/models/order.dart';
+import '../../../../data/repositories/auth_repository.dart';
 import '../../../../data/repositories/cart_repository.dart';
 import '../../../../data/repositories/catalog_repository.dart';
 import '../../../../data/repositories/offline_queue_repository.dart';
@@ -12,6 +13,7 @@ import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../view_models/pos_view_model.dart';
 import '../widgets/cart_sheet.dart';
+import '../widgets/expense_sheet.dart';
 import '../widgets/receipt_dialog.dart';
 
 class PosView extends StatelessWidget {
@@ -51,6 +53,15 @@ class _PosScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _openExpenseSheet(BuildContext context, String shiftId) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => ExpenseSheet(shiftId: shiftId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -58,11 +69,19 @@ class _PosScreen extends StatelessWidget {
     final viewModel = context.watch<PosViewModel>();
     final shift = context.watch<ShiftRepository>();
     final cart = context.watch<CartRepository>();
+    final auth = context.watch<AuthRepository>();
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.navPos),
         actions: [
+          if (shift.hasActiveShift && auth.hasPermission('pos.expense'))
+            IconButton(
+              tooltip: l10n.posExpenseTooltip,
+              icon: const Icon(Icons.receipt_outlined),
+              onPressed: () =>
+                  _openExpenseSheet(context, shift.activeShift!.id),
+            ),
           IconButton(
             tooltip: l10n.ordersTitle,
             icon: const Icon(Icons.receipt_long_outlined),

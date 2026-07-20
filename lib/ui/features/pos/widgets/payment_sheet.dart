@@ -10,7 +10,11 @@ import '../../../core/widgets/rupiah_field.dart';
 /// Payment step: method + amount tendered. Pops with the completed order.
 /// Non-cash methods (QRIS/transfer) always pay the exact total.
 class PaymentSheet extends StatefulWidget {
-  const PaymentSheet({super.key});
+  const PaymentSheet({super.key, this.initialCustomerName});
+
+  /// Prefilled from the cart sheet's customer-name field, if the cashier
+  /// already typed one before tapping "Bayar".
+  final String? initialCustomerName;
 
   @override
   State<PaymentSheet> createState() => _PaymentSheetState();
@@ -36,6 +40,9 @@ class _PaymentSheetState extends State<PaymentSheet> {
     super.initState();
     final total = context.read<CartRepository>().totalAmount;
     _cashController.text = formatRupiahDigits(total);
+    if (widget.initialCustomerName != null && widget.initialCustomerName!.isNotEmpty) {
+      _customerController.text = widget.initialCustomerName!;
+    }
   }
 
   @override

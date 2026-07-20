@@ -74,7 +74,11 @@ class ApiClient {
   }) =>
       _send('PUT', path, body: body);
 
-  Future<Map<String, dynamic>> delete(String path) => _send('DELETE', path);
+  Future<Map<String, dynamic>> delete(
+    String path, {
+    Map<String, String>? query,
+  }) =>
+      _send('DELETE', path, query: query);
 
   /// Repoints the client at a Remote Config-provided base URL, once fetched.
   /// No-op for an empty value — the compile-time [Env.apiBaseUrl] default

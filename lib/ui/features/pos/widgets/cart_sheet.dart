@@ -17,18 +17,26 @@ class CartSheet extends StatefulWidget {
 }
 
 class _CartSheetState extends State<CartSheet> {
+  final _customerController = TextEditingController();
   bool _confirmingCancel = false;
   bool _holding = false;
 
+  @override
+  void dispose() {
+    _customerController.dispose();
+    super.dispose();
+  }
+
   Future<void> _startPayment(BuildContext context) async {
     final cart = context.read<CartRepository>();
+    final customerName = _customerController.text.trim();
     final order = await showModalBottomSheet<Order>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
       builder: (_) => ChangeNotifierProvider<CartRepository>.value(
         value: cart,
-        child: const PaymentSheet(),
+        child: PaymentSheet(initialCustomerName: customerName),
       ),
     );
     if (order != null && context.mounted) {
@@ -39,7 +47,9 @@ class _CartSheetState extends State<CartSheet> {
   /// "Bayar Nanti" — completes the order with no payment.
   Future<void> _payLater(BuildContext context) async {
     final cart = context.read<CartRepository>();
-    final order = await cart.checkout();
+    final order = await cart.checkout(
+      customerName: _customerController.text.trim(),
+    );
     if (context.mounted) Navigator.of(context).pop(order);
   }
 
@@ -47,7 +57,9 @@ class _CartSheetState extends State<CartSheet> {
   Future<void> _hold(BuildContext context) async {
     setState(() => _holding = true);
     final cart = context.read<CartRepository>();
-    final order = await cart.hold();
+    final order = await cart.hold(
+      customerName: _customerController.text.trim(),
+    );
     if (context.mounted) Navigator.of(context).pop(order);
   }
 
@@ -119,6 +131,13 @@ class _CartSheetState extends State<CartSheet> {
                 ),
               ),
             const Divider(),
+            if (!cart.isEmpty) ...[
+              TextField(
+                controller: _customerController,
+                decoration: InputDecoration(labelText: l10n.customerNameLabel),
+              ),
+              const SizedBox(height: 12),
+            ],
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

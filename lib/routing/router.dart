@@ -12,6 +12,8 @@ import '../ui/features/finance/views/finance_new_view.dart';
 import '../ui/features/finance/views/finance_view.dart';
 import '../ui/features/forbidden/views/forbidden_view.dart';
 import '../ui/features/home/views/home_view.dart';
+import '../ui/features/inventory/views/daily_stock_detail_view.dart';
+import '../ui/features/inventory/views/daily_stock_history_view.dart';
 import '../ui/features/inventory/views/daily_stock_view.dart';
 import '../ui/features/inventory/views/open_stock_view.dart';
 import '../ui/features/inventory/views/stock_valuation_view.dart';
@@ -36,6 +38,7 @@ abstract final class AppRoutes {
   static const catalog = '/catalog';
   static const inventory = '/inventory';
   static const inventoryNew = '/inventory/new';
+  static const inventoryHistory = '/inventory/history';
   static const inventoryStock = '/inventory/stock';
   static const finance = '/finance';
   static const financeNew = '/finance/new';
@@ -77,7 +80,12 @@ String? _redirect(AuthRepository auth, GoRouterState state) {
     return AppRoutes.home;
   }
 
-  final required = routePermissions[path];
+  // `/inventory/history/:date` is a dynamic detail route (not in the static
+  // nav registry) — falls back to the same permission as the history list.
+  final required = routePermissions[path] ??
+      (path.startsWith('/inventory/history/')
+          ? const ['inventory.view']
+          : null);
   if (required != null &&
       required.isNotEmpty &&
       !auth.hasAnyPermission(required)) {
@@ -140,7 +148,19 @@ GoRouter createRouter(AuthRepository auth) => GoRouter(
             ),
             GoRoute(
               path: AppRoutes.inventoryNew,
-              builder: (context, state) => const OpenStockView(),
+              builder: (context, state) => OpenStockView(
+                initialDate: state.uri.queryParameters['date'],
+              ),
+            ),
+            GoRoute(
+              path: AppRoutes.inventoryHistory,
+              builder: (context, state) => const DailyStockHistoryView(),
+            ),
+            GoRoute(
+              path: '${AppRoutes.inventoryHistory}/:date',
+              builder: (context, state) => DailyStockDetailView(
+                date: state.pathParameters['date']!,
+              ),
             ),
             GoRoute(
               path: AppRoutes.inventoryStock,

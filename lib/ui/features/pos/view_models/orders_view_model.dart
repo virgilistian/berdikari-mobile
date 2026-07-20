@@ -16,7 +16,10 @@ class OrdersViewModel extends ChangeNotifier {
   bool _busy = false;
   String? _actionError;
 
-  /// Empty string = all statuses.
+  /// Empty string = all statuses. `'unpaid'` is a derived filter (not a
+  /// real order status): fetches `completed` orders, then keeps only those
+  /// with an outstanding balance — mirrors berdikari-web `orders.vue`'s
+  /// "Belum Lunas" tab.
   String _statusFilter = '';
 
   List<Order> get items => _items;
@@ -31,9 +34,15 @@ class OrdersViewModel extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
+      final isUnpaid = _statusFilter == 'unpaid';
       _items = await _orders.fetchOrders(
-        status: _statusFilter.isEmpty ? null : _statusFilter,
+        status: isUnpaid
+            ? 'completed'
+            : (_statusFilter.isEmpty ? null : _statusFilter),
       );
+      if (isUnpaid) {
+        _items = _items.where((o) => o.balanceDue > 0).toList();
+      }
     } catch (_) {
       _error = 'Gagal memuat data.';
       _items = [];

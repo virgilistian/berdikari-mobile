@@ -69,6 +69,7 @@ class _OrdersScreen extends StatelessWidget {
     final filters = <(String, String)>[
       ('', l10n.statusAll),
       ('open', l10n.statusOpen),
+      ('unpaid', l10n.statusUnpaid),
       ('completed', l10n.statusCompleted),
       ('cancelled', l10n.statusCancelled),
       ('refunded', l10n.statusRefunded),

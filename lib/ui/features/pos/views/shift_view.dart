@@ -3,8 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../data/models/daily_stock.dart';
+import '../../../../data/models/finance.dart';
 import '../../../../data/models/shift.dart';
 import '../../../../data/repositories/auth_repository.dart';
+import '../../../../data/repositories/daily_stock_repository.dart';
+import '../../../../data/repositories/finance_repository.dart';
 import '../../../../data/repositories/offline_queue_repository.dart';
 import '../../../../data/repositories/shift_repository.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -12,6 +16,7 @@ import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/rupiah_field.dart';
 import '../view_models/shift_view_model.dart';
+import '../widgets/shift_summary_details.dart';
 
 const _paymentMethodLabels = {
   'cash': 'Tunai',
@@ -51,7 +56,7 @@ class _ShiftScreen extends StatelessWidget {
     } else if (viewModel.closedSummary != null) {
       body = _ClosedSummary(summary: viewModel.closedSummary!);
     } else if (shift.hasActiveShift) {
-      body = _CloseShiftForm(shift: shift.activeShift!);
+      body = _ActiveShiftSummary(shift: shift.activeShift!);
     } else if (auth.hasPermission('pos.open')) {
       body = const _OpenShiftForm();
     } else {
@@ -234,32 +239,197 @@ class _OpenShiftFormState extends State<_OpenShiftForm> {
   }
 }
 
-class _CloseShiftForm extends StatefulWidget {
-  const _CloseShiftForm({required this.shift});
+/// Compact active-shift banner + "Tutup Shift" entry point. Deliberately
+/// does not fetch daily-stock data itself — that only happens once the
+/// close-shift wizard sheet actually opens, matching berdikari-web
+/// `shift.vue`'s button-opens-drawer pattern (rather than eagerly loading
+/// stock data just because a shift happens to be open).
+class _ActiveShiftSummary extends StatelessWidget {
+  const _ActiveShiftSummary({required this.shift});
+
+  final CashierShift shift;
+
+  Future<void> _openCloseWizard(BuildContext context) async {
+    final viewModel = context.read<ShiftViewModel>();
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => ChangeNotifierProvider<ShiftViewModel>.value(
+        value: viewModel,
+        child: _CloseShiftWizard(shift: shift),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final auth = context.watch<AuthRepository>();
+    final canClose = auth.hasPermission('pos.close');
+    final openedTime = DateFormat.Hm().format(shift.openedAt.toLocal());
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _OfflineQueueStatus(),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.shiftActiveBanner(openedTime),
+                    style: theme.textTheme.titleSmall!
+                        .copyWith(color: theme.colorScheme.primary),
+                  ),
+                  const SizedBox(height: 8),
+                  _KeyValueRow(
+                      l10n.openingCashLabel, formatRupiah(shift.openingCash)),
+                  _KeyValueRow(l10n.transactionCountLabel,
+                      '${shift.transactionCount}'),
+                  _KeyValueRow(
+                      l10n.totalSalesLabel, formatRupiah(shift.totalSales)),
+                ],
+              ),
+            ),
+          ),
+          if (shift.paymentBreakdown.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(l10n.shiftPaymentBreakdownTitle,
+                style: theme.textTheme.titleSmall),
+            const SizedBox(height: 8),
+            for (final entry in shift.paymentBreakdown.entries)
+              _KeyValueRow(
+                paymentMethodLabel(entry.key),
+                formatRupiah(entry.value),
+              ),
+          ],
+          const SizedBox(height: 16),
+          if (!canClose)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                l10n.shiftCloseNotPermitted,
+                style: theme.textTheme.bodySmall,
+              ),
+            )
+          else
+            ElevatedButton(
+              onPressed: () => _openCloseWizard(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.error,
+                foregroundColor: theme.colorScheme.onError,
+              ),
+              child: Text(l10n.closeShiftButton),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Stock physical-count line being edited during the close-shift wizard's
+/// reconciliation step.
+class _StockAdjustment {
+  _StockAdjustment(this.physical) : reasonController = TextEditingController();
+  int physical;
+  final TextEditingController reasonController;
+}
+
+/// Close-shift wizard: stock reconciliation -> cash closing. Mirrors
+/// berdikari-web `pos/shift.vue`'s `showCloseForm` drawer steps 1-2 (step 3,
+/// the summary, is rendered separately once [ShiftViewModel.closedSummary]
+/// is set — see `_ShiftScreen`).
+class _CloseShiftWizard extends StatefulWidget {
+  const _CloseShiftWizard({required this.shift});
 
   final CashierShift shift;
 
   @override
-  State<_CloseShiftForm> createState() => _CloseShiftFormState();
+  State<_CloseShiftWizard> createState() => _CloseShiftWizardState();
 }
 
-class _CloseShiftFormState extends State<_CloseShiftForm> {
+class _CloseShiftWizardState extends State<_CloseShiftWizard> {
   final _formKey = GlobalKey<FormState>();
   final _closingController = TextEditingController();
   final _noteController = TextEditingController();
 
+  String _step = 'stock';
+  final Map<String, _StockAdjustment> _adjustments = {};
+  bool _stockSubmitting = false;
+  String? _stockError;
+
   @override
   void initState() {
     super.initState();
-    // Recompute the live cash-difference preview on every keystroke.
     _closingController.addListener(() => setState(() {}));
+    final repo = context.read<DailyStockRepository>();
+    if (!repo.hasStocks) {
+      repo.fetchToday().then((_) => _seedAdjustments());
+    } else {
+      _seedAdjustments();
+    }
+  }
+
+  void _seedAdjustments() {
+    final repo = context.read<DailyStockRepository>();
+    for (final item in repo.stocks) {
+      _adjustments.putIfAbsent(
+          item.productId, () => _StockAdjustment(item.remainingQty));
+    }
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
     _closingController.dispose();
     _noteController.dispose();
+    for (final a in _adjustments.values) {
+      a.reasonController.dispose();
+    }
     super.dispose();
+  }
+
+  bool _stockStepValid(List<DailyStockItem> stocks) {
+    for (final item in stocks) {
+      final adj = _adjustments[item.productId];
+      if (adj == null) return false;
+      if (adj.physical == item.remainingQty) continue;
+      if (adj.reasonController.text.trim().isEmpty) return false;
+    }
+    return true;
+  }
+
+  Future<void> _submitStockStep(List<DailyStockItem> stocks) async {
+    setState(() {
+      _stockSubmitting = true;
+      _stockError = null;
+    });
+    final repo = context.read<DailyStockRepository>();
+    try {
+      for (final item in stocks) {
+        final adj = _adjustments[item.productId];
+        if (adj == null) continue;
+        final delta = adj.physical - item.remainingQty;
+        if (delta != 0) {
+          await repo.adjustStock(item.productId, delta,
+              note: adj.reasonController.text.trim());
+        }
+      }
+      if (mounted) setState(() => _step = 'cash');
+    } catch (_) {
+      if (mounted) {
+        setState(() =>
+            _stockError = 'Penyesuaian stok belum bisa disimpan. Coba lagi.');
+      }
+    } finally {
+      if (mounted) setState(() => _stockSubmitting = false);
+    }
   }
 
   @override
@@ -268,10 +438,140 @@ class _CloseShiftFormState extends State<_CloseShiftForm> {
     final theme = Theme.of(context);
     final viewModel = context.watch<ShiftViewModel>();
     final auth = context.watch<AuthRepository>();
+    final dailyStock = context.watch<DailyStockRepository>();
     final canClose = auth.hasPermission('pos.close');
     final shift = widget.shift;
-    final openedTime = DateFormat.Hm().format(shift.openedAt.toLocal());
 
+    if (_step == 'stock') {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l10n.shiftStockReconTitle, style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(l10n.shiftStockReconMessage, style: theme.textTheme.bodySmall),
+            const SizedBox(height: 12),
+            if (dailyStock.loading)
+              const Center(child: CircularProgressIndicator())
+            else if (dailyStock.stocks.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(l10n.shiftStockReconEmpty,
+                    style: theme.textTheme.bodySmall),
+              )
+            else
+              for (final item in dailyStock.stocks)
+                Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(item.productName,
+                                  style: theme.textTheme.titleSmall,
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                            Text(
+                              l10n.shiftStockReconSystemLine(
+                                  item.openingQty, item.soldQty, item.remainingQty),
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text(l10n.shiftStockPhysicalLabel,
+                                style: theme.textTheme.bodySmall),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              constraints: const BoxConstraints(
+                                  minWidth: 44, minHeight: 44),
+                              icon: const Icon(Icons.remove_circle_outline),
+                              onPressed: () {
+                                final adj = _adjustments[item.productId];
+                                if (adj == null || adj.physical <= 0) return;
+                                setState(() => adj.physical--);
+                              },
+                            ),
+                            SizedBox(
+                              width: 40,
+                              child: Text(
+                                '${_adjustments[item.productId]?.physical ?? item.remainingQty}',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.titleMedium,
+                              ),
+                            ),
+                            IconButton(
+                              constraints: const BoxConstraints(
+                                  minWidth: 44, minHeight: 44),
+                              icon: const Icon(Icons.add_circle_outline),
+                              onPressed: () {
+                                final adj = _adjustments[item.productId];
+                                if (adj == null) return;
+                                setState(() => adj.physical++);
+                              },
+                            ),
+                          ],
+                        ),
+                        if ((_adjustments[item.productId]?.physical ??
+                                item.remainingQty) !=
+                            item.remainingQty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: TextField(
+                              controller: _adjustments[item.productId]
+                                  ?.reasonController,
+                              decoration: InputDecoration(
+                                labelText: l10n.shiftStockReasonLabel,
+                                isDense: true,
+                              ),
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+            if (_stockError != null) ...[
+              const SizedBox(height: 8),
+              Text(_stockError!,
+                  style: theme.textTheme.bodySmall!
+                      .copyWith(color: theme.colorScheme.error)),
+            ],
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: (dailyStock.loading ||
+                      _stockSubmitting ||
+                      !_stockStepValid(dailyStock.stocks))
+                  ? null
+                  : () => _submitStockStep(dailyStock.stocks),
+              child: _stockSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : Text(dailyStock.stocks.isEmpty
+                      ? l10n.shiftStockSkip
+                      : l10n.shiftStockContinue),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Step 2: cash closing.
+    final openedTime = DateFormat.Hm().format(shift.openedAt.toLocal());
     final hasClosingInput = _closingController.text.isNotEmpty;
     final cashDiff = hasClosingInput
         ? parseRupiahInput(_closingController.text) - shift.expectedCashLive()
@@ -301,6 +601,8 @@ class _CloseShiftFormState extends State<_CloseShiftForm> {
                         l10n.openingCashLabel, formatRupiah(shift.openingCash)),
                     _KeyValueRow(l10n.transactionCountLabel,
                         '${shift.transactionCount}'),
+                    _KeyValueRow(l10n.shiftItemsSoldLabel,
+                        '${shift.totalItemsSold}'),
                     _KeyValueRow(
                         l10n.totalSalesLabel, formatRupiah(shift.totalSales)),
                   ],
@@ -318,6 +620,29 @@ class _CloseShiftFormState extends State<_CloseShiftForm> {
                   formatRupiah(entry.value),
                 ),
             ],
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(l10n.shiftCashSummaryTitle, style: theme.textTheme.labelLarge),
+                  const SizedBox(height: 4),
+                  _KeyValueRow(l10n.openingCashLabel, formatRupiah(shift.openingCash)),
+                  _KeyValueRow(
+                      '+ ${l10n.shiftCashSalesLine}', formatRupiah(shift.cashSales)),
+                  _KeyValueRow('- ${l10n.shiftExpensesLine}',
+                      formatRupiah(shift.totalExpenses)),
+                  const Divider(height: 12),
+                  _KeyValueRow(l10n.expectedCashLabel,
+                      formatRupiah(shift.expectedCashLive())),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
             if (!canClose)
               Padding(
@@ -363,24 +688,43 @@ class _CloseShiftFormState extends State<_CloseShiftForm> {
                 decoration: InputDecoration(labelText: l10n.closingNoteLabel),
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: viewModel.submitting
-                    ? null
-                    : () {
-                        if (!_formKey.currentState!.validate()) return;
-                        viewModel.closeShift(
-                          closingCash:
-                              parseRupiahInput(_closingController.text),
-                          note: _noteController.text.trim(),
-                        );
-                      },
-                child: viewModel.submitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(l10n.closeShiftButton),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => setState(() => _step = 'stock'),
+                      child: Text(l10n.back),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: viewModel.submitting
+                          ? null
+                          : () async {
+                              if (!_formKey.currentState!.validate()) return;
+                              final ok = await viewModel.closeShift(
+                                closingCash:
+                                    parseRupiahInput(_closingController.text),
+                                note: _noteController.text.trim(),
+                              );
+                              // Close the wizard sheet; the shift screen
+                              // underneath shows the summary once
+                              // `closedSummary` is set.
+                              if (ok && context.mounted) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                      child: viewModel.submitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(l10n.closeShiftButton),
+                    ),
+                  ),
+                ],
               ),
             ],
           ],
@@ -390,65 +734,69 @@ class _CloseShiftFormState extends State<_CloseShiftForm> {
   }
 }
 
-class _ClosedSummary extends StatelessWidget {
+/// Step 3 of the close-shift wizard: full recap + operational expenses for
+/// the just-closed shift — mirrors berdikari-web `shift.vue`'s summary step.
+class _ClosedSummary extends StatefulWidget {
   const _ClosedSummary({required this.summary});
 
   final CashierShift summary;
+
+  @override
+  State<_ClosedSummary> createState() => _ClosedSummaryState();
+}
+
+class _ClosedSummaryState extends State<_ClosedSummary> {
+  List<FinanceEntry> _expenses = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    context
+        .read<FinanceRepository>()
+        .fetchShiftExpenses(widget.summary.id)
+        .then((expenses) {
+      if (mounted) {
+        setState(() {
+          _expenses = expenses;
+          _loading = false;
+        });
+      }
+    }).catchError((_) {
+      if (mounted) setState(() => _loading = false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final viewModel = context.read<ShiftViewModel>();
-    final difference = summary.cashDifference ?? 0;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(l10n.shiftClosedTitle,
-                      style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  _KeyValueRow(
-                      l10n.openingCashLabel, formatRupiah(summary.openingCash)),
-                  _KeyValueRow(l10n.transactionCountLabel,
-                      '${summary.transactionCount}'),
-                  _KeyValueRow(
-                      l10n.totalSalesLabel, formatRupiah(summary.totalSales)),
-                  _KeyValueRow(l10n.expectedCashLabel,
-                      formatRupiah(summary.expectedCash ?? 0)),
-                  _KeyValueRow(l10n.closingCashLabel,
-                      formatRupiah(summary.closingCash ?? 0)),
-                  _KeyValueRow(
-                    l10n.cashDifferenceLabel,
-                    formatRupiah(difference),
-                    valueColor: difference < 0
-                        ? theme.colorScheme.error
-                        : theme.colorScheme.primary,
-                  ),
-                ],
-              ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.success.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.colorScheme.success.withValues(alpha: 0.2)),
+            ),
+            child: Center(
+              child: Text(l10n.shiftClosedTitle,
+                  style: theme.textTheme.titleSmall!
+                      .copyWith(color: theme.colorScheme.success)),
             ),
           ),
-          if (summary.paymentBreakdown.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Text(l10n.shiftPaymentBreakdownTitle,
-                style: theme.textTheme.titleSmall),
-            const SizedBox(height: 8),
-            for (final entry in summary.paymentBreakdown.entries)
-              _KeyValueRow(
-                paymentMethodLabel(entry.key),
-                formatRupiah(entry.value),
-              ),
-          ],
           const SizedBox(height: 16),
+          if (_loading)
+            const Center(child: CircularProgressIndicator())
+          else
+            ShiftSummaryDetails(shift: widget.summary, expenses: _expenses),
+          const SizedBox(height: 8),
           ElevatedButton(
             onPressed: viewModel.dismissSummary,
             child: Text(l10n.shiftSummaryDone),

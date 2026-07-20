@@ -1271,6 +1271,115 @@
   "@shiftDiscardFailed": {
     "description": "Tombol hapus transaksi yang ditolak server"
   },
+  "back": "Kembali",
+  "@back": {
+    "description": "Tombol kembali (langkah wizard)"
+  },
+  "shiftItemsSoldLabel": "Item Terjual",
+  "@shiftItemsSoldLabel": {
+    "description": "Label jumlah item terjual pada shift"
+  },
+  "shiftStockReconTitle": "Rekonsiliasi Stok",
+  "@shiftStockReconTitle": {
+    "description": "Judul langkah rekonsiliasi stok saat tutup shift"
+  },
+  "shiftStockReconMessage": "Periksa sisa stok menurut sistem. Sesuaikan jika jumlah fisik berbeda, dan isi alasan penyesuaian.",
+  "@shiftStockReconMessage": {
+    "description": "Instruksi langkah rekonsiliasi stok"
+  },
+  "shiftStockReconEmpty": "Belum ada data stok hari ini. Kamu bisa lanjut menutup shift tanpa rekonsiliasi stok.",
+  "@shiftStockReconEmpty": {
+    "description": "Pesan saat tidak ada data stok harian untuk direkonsiliasi"
+  },
+  "shiftStockReconSystemLine": "Awal {opening} · Terjual {sold} · Sistem {remaining}",
+  "@shiftStockReconSystemLine": {
+    "description": "Ringkasan stok sistem per baris produk pada rekonsiliasi",
+    "placeholders": {
+      "opening": {"type": "int"},
+      "sold": {"type": "int"},
+      "remaining": {"type": "int"}
+    }
+  },
+  "shiftStockPhysicalLabel": "Fisik",
+  "@shiftStockPhysicalLabel": {
+    "description": "Label jumlah fisik pada rekonsiliasi stok"
+  },
+  "shiftStockReasonLabel": "Alasan penyesuaian (wajib)",
+  "@shiftStockReasonLabel": {
+    "description": "Placeholder alasan penyesuaian stok"
+  },
+  "shiftStockSkip": "Lewati",
+  "@shiftStockSkip": {
+    "description": "Tombol lewati rekonsiliasi stok (tidak ada data)"
+  },
+  "shiftStockContinue": "Lanjut",
+  "@shiftStockContinue": {
+    "description": "Tombol lanjut ke langkah tutup kas"
+  },
+  "shiftCashSummaryTitle": "Ringkasan Kas",
+  "@shiftCashSummaryTitle": {
+    "description": "Judul ringkasan kas pada tutup shift"
+  },
+  "shiftCashSalesLine": "Penjualan Tunai",
+  "@shiftCashSalesLine": {
+    "description": "Baris penjualan tunai pada ringkasan kas"
+  },
+  "shiftExpensesLine": "Pengeluaran Operasional",
+  "@shiftExpensesLine": {
+    "description": "Baris pengeluaran operasional pada ringkasan kas"
+  },
+  "shiftInfoSection": "Informasi Shift",
+  "@shiftInfoSection": {
+    "description": "Judul bagian informasi shift pada ringkasan"
+  },
+  "shiftSalesSummaryTitle": "Ringkasan Penjualan",
+  "@shiftSalesSummaryTitle": {
+    "description": "Judul bagian ringkasan penjualan pada ringkasan shift"
+  },
+  "shiftTotalCashLabel": "Total Tunai",
+  "@shiftTotalCashLabel": {
+    "description": "Label total penjualan tunai"
+  },
+  "shiftTotalNonCashLabel": "Total Non-Tunai",
+  "@shiftTotalNonCashLabel": {
+    "description": "Label total penjualan non-tunai"
+  },
+  "shiftDurationLabel": "Durasi Shift",
+  "@shiftDurationLabel": {
+    "description": "Label durasi shift pada ringkasan"
+  },
+  "shiftExpensesSection": "Pengeluaran Operasional",
+  "@shiftExpensesSection": {
+    "description": "Judul bagian daftar pengeluaran operasional pada ringkasan shift"
+  },
+  "shiftExpensesEmpty": "Belum ada pengeluaran dicatat",
+  "@shiftExpensesEmpty": {
+    "description": "Pesan saat belum ada pengeluaran shift"
+  },
+  "shiftNetIncomeLabel": "Pendapatan Bersih",
+  "@shiftNetIncomeLabel": {
+    "description": "Label pendapatan bersih pada ringkasan shift"
+  },
+  "shiftStockSection": "Stok",
+  "@shiftStockSection": {
+    "description": "Judul bagian rekap stok pada ringkasan shift"
+  },
+  "shiftStockOpeningLabel": "Stok Awal",
+  "@shiftStockOpeningLabel": {
+    "description": "Label total stok awal pada rekap shift"
+  },
+  "shiftStockSoldLabel": "Terjual",
+  "@shiftStockSoldLabel": {
+    "description": "Label total stok terjual pada rekap shift"
+  },
+  "shiftStockRemainingLabel": "Sisa Stok",
+  "@shiftStockRemainingLabel": {
+    "description": "Label total sisa stok pada rekap shift"
+  },
+  "shiftStockAdjustmentsTitle": "Penyesuaian Stok",
+  "@shiftStockAdjustmentsTitle": {
+    "description": "Judul daftar penyesuaian stok pada rekap shift"
+  },
   "ordersBalanceDueLabel": "Sisa (Piutang)",
   "@ordersBalanceDueLabel": {
     "description": "Label sisa tagihan pesanan"
@@ -1322,5 +1431,113 @@
   "financeDateLabel": "Tanggal transaksi",
   "@financeDateLabel": {
     "description": "Label tanggal transaksi pada formulir keuangan baru"
+  },
+  "dailyStockHistoryTitle": "Riwayat Stok Harian",
+  "@dailyStockHistoryTitle": {
+    "description": "Judul halaman riwayat stok harian"
+  },
+  "dailyStockHistoryEmptyTitle": "Belum Ada Riwayat Stok",
+  "@dailyStockHistoryEmptyTitle": {
+    "description": "Judul kosong pada riwayat stok harian"
+  },
+  "dailyStockHistoryEmptyMessage": "Catat stok awal hari ini untuk mulai membangun riwayat stok harian",
+  "@dailyStockHistoryEmptyMessage": {
+    "description": "Pesan kosong pada riwayat stok harian"
+  },
+  "dailyStockAddButton": "Tambah Stok Harian",
+  "@dailyStockAddButton": {
+    "description": "Tombol tambah stok harian"
+  },
+  "dailyStockStatusDraft": "Draf",
+  "@dailyStockStatusDraft": {
+    "description": "Status stok harian: draf"
+  },
+  "dailyStockStatusOpen": "Berjalan",
+  "@dailyStockStatusOpen": {
+    "description": "Status stok harian: berjalan"
+  },
+  "dailyStockStatusClosed": "Selesai",
+  "@dailyStockStatusClosed": {
+    "description": "Status stok harian: selesai"
+  },
+  "dailyStockDetailTitle": "Detail Stok Harian",
+  "@dailyStockDetailTitle": {
+    "description": "Judul halaman detail stok harian"
+  },
+  "dailyStockDraftBanner": "Ini masih draf — belum berlaku sampai tanggal tiba.",
+  "@dailyStockDraftBanner": {
+    "description": "Banner draf stok harian belum berlaku"
+  },
+  "dailyStockNoDataForDate": "Tidak ada data stok untuk tanggal ini",
+  "@dailyStockNoDataForDate": {
+    "description": "Pesan tidak ada data stok untuk tanggal yang dipilih"
+  },
+  "dailyStockAutoCloseNote": "Stok akan direkonsiliasi dan ditutup otomatis saat kasir menutup shift.",
+  "@dailyStockAutoCloseNote": {
+    "description": "Catatan bahwa stok ditutup otomatis lewat tutup shift"
+  },
+  "dailyStockEditAction": "Edit",
+  "@dailyStockEditAction": {
+    "description": "Tombol edit draf stok harian"
+  },
+  "dailyStockDeleteAction": "Hapus",
+  "@dailyStockDeleteAction": {
+    "description": "Tombol hapus draf stok harian"
+  },
+  "dailyStockDeleteDraftConfirmTitle": "Hapus Draf Stok Ini?",
+  "@dailyStockDeleteDraftConfirmTitle": {
+    "description": "Judul konfirmasi hapus draf stok harian"
+  },
+  "dailyStockDeleteDraftConfirmMessage": "Draf stok untuk tanggal ini akan dihapus dan tidak bisa dikembalikan.",
+  "@dailyStockDeleteDraftConfirmMessage": {
+    "description": "Isi konfirmasi hapus draf stok harian"
+  },
+  "dailyStockDeleted": "Draf stok harian sudah dihapus.",
+  "@dailyStockDeleted": {
+    "description": "Pesan sukses hapus draf stok harian"
+  },
+  "openStockDateLabel": "Tanggal stok",
+  "@openStockDateLabel": {
+    "description": "Label pemilih tanggal pada buka stok"
+  },
+  "openStockDateHint": "Ingin menyiapkan stok lebih awal? Pilih tanggal yang diinginkan di sini.",
+  "@openStockDateHint": {
+    "description": "Petunjuk pemilih tanggal buka stok"
+  },
+  "posExpenseTooltip": "Catat pengeluaran",
+  "@posExpenseTooltip": {
+    "description": "Tooltip tombol catat pengeluaran shift di layar kasir"
+  },
+  "posExpenseDrawerTitle": "Catat Pengeluaran",
+  "@posExpenseDrawerTitle": {
+    "description": "Judul drawer catat pengeluaran shift"
+  },
+  "posExpenseAmountLabel": "Jumlah pengeluaran",
+  "@posExpenseAmountLabel": {
+    "description": "Label jumlah pada catat pengeluaran shift"
+  },
+  "posExpenseCategoryLabel": "Kategori",
+  "@posExpenseCategoryLabel": {
+    "description": "Label kategori pada catat pengeluaran shift"
+  },
+  "posExpenseNoteLabel": "Catatan (opsional)",
+  "@posExpenseNoteLabel": {
+    "description": "Label catatan pada catat pengeluaran shift"
+  },
+  "posExpenseRecordedTitle": "Sudah dicatat shift ini",
+  "@posExpenseRecordedTitle": {
+    "description": "Judul daftar pengeluaran yang sudah dicatat shift berjalan"
+  },
+  "posExpenseSaved": "Pengeluaran sudah ditambahkan ke shift ini",
+  "@posExpenseSaved": {
+    "description": "Pesan sukses catat pengeluaran shift"
+  },
+  "posExpenseRequiresShift": "Buka shift terlebih dahulu untuk mencatat pengeluaran.",
+  "@posExpenseRequiresShift": {
+    "description": "Pesan saat mencatat pengeluaran tanpa shift aktif"
+  },
+  "statusUnpaid": "Belum Lunas",
+  "@statusUnpaid": {
+    "description": "Filter/status pesanan selesai namun belum lunas"
   }
 }
