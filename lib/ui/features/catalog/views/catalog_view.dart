@@ -6,6 +6,7 @@ import '../../../../data/repositories/auth_repository.dart';
 import '../../../../data/repositories/catalog_repository.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/format.dart';
+import '../../../core/widgets/sync_status_indicator.dart';
 import '../view_models/catalog_view_model.dart';
 import '../widgets/product_form_sheet.dart';
 
@@ -224,6 +225,10 @@ class _ProductCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
+              if (product.pendingSync) ...[
+                const SizedBox(height: 2),
+                const SyncPendingBadge(),
+              ],
               const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

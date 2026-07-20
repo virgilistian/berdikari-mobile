@@ -1539,5 +1539,46 @@
   "statusUnpaid": "Belum Lunas",
   "@statusUnpaid": {
     "description": "Filter/status pesanan selesai namun belum lunas"
+  },
+  "syncStatusSyncing": "Menyinkronkan…",
+  "@syncStatusSyncing": {
+    "description": "Indikator sinkronisasi: sedang berjalan"
+  },
+  "syncStatusSynced": "Tersinkron",
+  "@syncStatusSynced": {
+    "description": "Indikator sinkronisasi: semua data sudah tersinkron"
+  },
+  "syncStatusPending": "Menunggu ({count})",
+  "@syncStatusPending": {
+    "description": "Indikator sinkronisasi: ada perubahan menunggu dikirim",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncStatusFailed": "Gagal — ketuk untuk coba lagi",
+  "@syncStatusFailed": {
+    "description": "Indikator sinkronisasi: ada perubahan gagal dikirim"
+  },
+  "syncStatusOffline": "Offline — perubahan tersimpan di perangkat",
+  "@syncStatusOffline": {
+    "description": "Indikator sinkronisasi: perangkat sedang offline"
+  },
+  "syncPendingBadge": "Menunggu sinkronisasi",
+  "@syncPendingBadge": {
+    "description": "Label kecil pada baris data yang belum tersinkron ke server"
+  },
+  "syncFailedSheetTitle": "Perubahan gagal disinkronkan",
+  "@syncFailedSheetTitle": {
+    "description": "Judul lembar retry/discard untuk item yang gagal sinkron"
+  },
+  "syncRetry": "Coba lagi",
+  "@syncRetry": {
+    "description": "Tombol coba sinkronkan ulang"
+  },
+  "syncDiscard": "Batalkan perubahan",
+  "@syncDiscard": {
+    "description": "Tombol membatalkan perubahan yang gagal sinkron"
   }
 }

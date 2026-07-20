@@ -40,8 +40,13 @@ void main() {
     await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('Belanja Bahan'), findsOneWidget);
-    expect(find.text('-Rp25.000'), findsOneWidget);
+    // The summary is now computed locally from the real cached entries
+    // (not a disconnected fake that was always empty), so both the
+    // category and amount legitimately appear more than once: the entry
+    // tile, the by-category breakdown chip, and — for the amount only —
+    // the "Bersih" net card (net == -25000 here since there's no income).
+    expect(find.text('Belanja Bahan'), findsNWidgets(2));
+    expect(find.text('-Rp25.000'), findsNWidgets(3));
   });
 
   testWidgets('viewer without finance.create sees no add button', (tester) async {

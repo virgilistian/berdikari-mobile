@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../../data/local/app_database.dart';
 import '../../../../data/models/order.dart';
 import '../../../../data/repositories/auth_repository.dart';
 import '../../../../data/services/finance_service.dart';
@@ -31,18 +32,25 @@ class HomeViewModel extends ChangeNotifier {
     required FinanceService financeService,
     required InventoryService inventoryService,
     required AuthRepository authRepository,
+    required AppDatabase database,
   })  : _sales = salesService,
         _finance = financeService,
         _inventory = inventoryService,
-        _auth = authRepository;
+        _auth = authRepository,
+        _db = database;
 
   final SalesService _sales;
   final FinanceService _finance;
   final InventoryService _inventory;
   final AuthRepository _auth;
+  final AppDatabase _db;
 
   bool _loadingKpi = true;
   bool _loadingTransactions = true;
+
+  /// True once a cached snapshot has already painted the screen — the
+  /// background refresh that follows must stay silent (no spinner flash).
+  bool _hasCachedSnapshot = false;
   SalesToday? _salesToday;
   int? _cashNet;
   int? _cashIncome;
@@ -64,10 +72,86 @@ class HomeViewModel extends ChangeNotifier {
     return null;
   }
 
-  Future<void> load() => Future.wait([_loadKpis(), _loadTransactions()]);
+  /// Paints instantly from the cached snapshot (if any), then always
+  /// refreshes from the network in the background and writes the fresh
+  /// result back to the cache — never blocks the UI on the network.
+  Future<void> load() async {
+    _loadFromCache();
+    await Future.wait([_loadKpis(), _loadTransactions()]);
+    _writeCache();
+  }
+
+  void _loadFromCache() {
+    final businessId = _auth.user?.businessId;
+    if (businessId == null) return;
+    final cached = _db.getDashboardCache(businessId);
+    if (cached == null) return;
+
+    _hasCachedSnapshot = true;
+    final salesTodayJson = cached['sales_today'] as Map<String, dynamic>?;
+    _salesToday = salesTodayJson == null
+        ? null
+        : SalesToday(
+            grossSales: salesTodayJson['gross'] as int,
+            orderCount: salesTodayJson['count'] as int,
+          );
+    _cashNet = cached['cash_net'] as int?;
+    _cashIncome = cached['cash_income'] as int?;
+    _lowStockCount = cached['low_stock_count'] as int?;
+    _recentOrders = (cached['recent_orders'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map((m) => Order(
+              id: m['id'] as String,
+              orderNo: m['order_no'] as String?,
+              status: m['status'] as String,
+              paymentStatus: m['payment_status'] as String,
+              totalAmount: m['total_amount'] as int,
+              paidAmount: 0,
+              changeAmount: 0,
+              balanceDue: 0,
+              customerName: m['customer_name'] as String?,
+              createdAt: DateTime.parse(m['created_at'] as String),
+              items: List.generate(
+                m['item_count'] as int? ?? 0,
+                (_) => const OrderItem(
+                    productId: '', quantity: 0, unitPrice: 0, subtotal: 0),
+              ),
+              payments: const [],
+            ))
+        .toList();
+    _loadingKpi = false;
+    _loadingTransactions = false;
+    notifyListeners();
+  }
+
+  void _writeCache() {
+    final businessId = _auth.user?.businessId;
+    if (businessId == null) return;
+    _db.putDashboardCache(businessId, {
+      'sales_today': _salesToday == null
+          ? null
+          : {'gross': _salesToday!.grossSales, 'count': _salesToday!.orderCount},
+      'cash_net': _cashNet,
+      'cash_income': _cashIncome,
+      'low_stock_count': _lowStockCount,
+      'recent_orders': [
+        for (final order in _recentOrders)
+          {
+            'id': order.id,
+            'order_no': order.orderNo,
+            'status': order.status,
+            'payment_status': order.paymentStatus,
+            'total_amount': order.totalAmount,
+            'customer_name': order.customerName,
+            'created_at': order.createdAt.toIso8601String(),
+            'item_count': order.items.length,
+          },
+      ],
+    });
+  }
 
   Future<void> _loadKpis() async {
-    _loadingKpi = true;
+    if (!_hasCachedSnapshot) _loadingKpi = true;
     final businessId = _auth.user?.businessId;
     final today = DateTime.now().toIso8601String().split('T').first;
 
@@ -126,7 +210,7 @@ class HomeViewModel extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    _loadingTransactions = true;
+    if (!_hasCachedSnapshot) _loadingTransactions = true;
     try {
       final orders = await _sales.fetchOrders(businessId: _auth.user?.businessId);
       _recentOrders = orders.take(5).toList();

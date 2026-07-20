@@ -1,3 +1,4 @@
+import 'package:berdikari_mobile/data/local/app_database.dart';
 import 'package:berdikari_mobile/data/models/finance.dart';
 import 'package:berdikari_mobile/data/repositories/finance_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,25 +7,22 @@ import '../../support/fakes.dart';
 
 void main() {
   group('FinanceRepository', () {
-    test('fetchAll loads entries + summary', () async {
+    test('fetchAll loads entries + a locally-computed summary', () async {
       final service = FakeFinanceService(
-        entries: [sampleFinanceEntry(id: 'f1', type: 'income')],
-        summary: const FinanceSummary(
-          totalIncome: 50000,
-          totalExpense: 20000,
-          net: 30000,
-          incomeByCategory: {'Penjualan': 50000},
-          expenseByCategory: {'Belanja Bahan': 20000},
-        ),
+        entries: [
+          sampleFinanceEntry(id: 'f1', type: 'income', amount: 50000, category: 'Penjualan'),
+          sampleFinanceEntry(id: 'f2', type: 'expense', amount: 20000, category: 'Belanja Bahan'),
+        ],
       );
       final repo = FinanceRepository(
         financeService: service,
         authRepository: fakeAuthRepository(user: sampleUser(), token: 't'),
+        database: AppDatabase(),
       );
 
       await repo.fetchAll();
 
-      expect(repo.entries, hasLength(1));
+      expect(repo.entries, hasLength(2));
       expect(repo.summary.net, 30000);
       expect(repo.error, isNull);
     });
@@ -37,6 +35,7 @@ void main() {
       final repo = FinanceRepository(
         financeService: service,
         authRepository: fakeAuthRepository(user: sampleUser(), token: 't'),
+        database: AppDatabase(),
       );
       await repo.fetchAll();
       expect(repo.entries, hasLength(2));
@@ -47,11 +46,13 @@ void main() {
       expect(repo.entries.map((e) => e.id), ['f1']);
     });
 
-    test('createEntry saves through the service and refreshes the list', () async {
+    test('createEntry writes locally immediately, then syncs to the service',
+        () async {
       final service = FakeFinanceService();
       final repo = FinanceRepository(
         financeService: service,
         authRepository: fakeAuthRepository(user: sampleUser(), token: 't'),
+        database: AppDatabase(),
       );
       await repo.fetchAll();
 
@@ -62,9 +63,16 @@ void main() {
         note: 'Cabai dan bawang',
       );
 
+      // Optimistic: visible locally right away, before any network call.
       expect(entry.category, 'Belanja Bahan');
-      expect(service.lastCreatePayload!['amount'], 15000);
+      expect(entry.pendingSync, isTrue);
       expect(repo.entries, hasLength(1));
+
+      // createEntry already fired its own background push — let it settle
+      // instead of racing it with a second explicit call.
+      await pumpEventQueue();
+      expect(service.lastCreatePayload!['amount'], 15000);
+      expect(repo.entries.single.pendingSync, isFalse);
     });
 
     test('deleteEntry removes through the service and refreshes the list', () async {
@@ -72,6 +80,7 @@ void main() {
       final repo = FinanceRepository(
         financeService: service,
         authRepository: fakeAuthRepository(user: sampleUser(), token: 't'),
+        database: AppDatabase(),
       );
       await repo.fetchAll();
       expect(repo.entries, hasLength(1));
@@ -81,10 +90,11 @@ void main() {
       expect(repo.entries, isEmpty);
     });
 
-    test('fetchAll failure surfaces an error and clears data', () async {
+    test('fetchAll failure with nothing cached surfaces an error', () async {
       final repo = FinanceRepository(
         financeService: _ThrowingFinanceService(),
         authRepository: fakeAuthRepository(user: sampleUser(), token: 't'),
+        database: AppDatabase(),
       );
 
       await repo.fetchAll();

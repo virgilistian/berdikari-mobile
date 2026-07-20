@@ -9,6 +9,7 @@ import '../../../../data/services/api_client.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/sync_status_indicator.dart';
 
 String financePeriodLabel(AppLocalizations l10n, FinancePeriod period) =>
     switch (period) {
@@ -380,7 +381,12 @@ class _FinanceEntryTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(entry.category, style: theme.textTheme.titleSmall),
-                  if (entry.isAuto)
+                  if (entry.pendingSync)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 2),
+                      child: SyncPendingBadge(),
+                    )
+                  else if (entry.isAuto)
                     Text(l10n.financeAutoBadge,
                         style: theme.textTheme.bodySmall!
                             .copyWith(color: theme.colorScheme.primary))

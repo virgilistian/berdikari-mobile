@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../data/local/app_database.dart';
 import '../../../../data/models/order.dart';
 import '../../../../data/repositories/auth_repository.dart';
 import '../../../../data/services/finance_service.dart';
@@ -24,6 +25,7 @@ class HomeView extends StatelessWidget {
         financeService: context.read<FinanceService>(),
         inventoryService: context.read<InventoryService>(),
         authRepository: context.read<AuthRepository>(),
+        database: context.read<AppDatabase>(),
       )..load(),
       child: const _HomeScreen(),
     );

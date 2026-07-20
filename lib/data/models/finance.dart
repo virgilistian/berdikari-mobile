@@ -38,6 +38,7 @@ class FinanceEntry {
     this.businessName,
     this.sourceType,
     this.sourceId,
+    this.pendingSync = false,
   });
 
   factory FinanceEntry.fromJson(Map<String, dynamic> json) => FinanceEntry(
@@ -69,6 +70,10 @@ class FinanceEntry {
   /// automatically and will refuse to delete it.
   final String? sourceType;
   final String? sourceId;
+
+  /// True while a create/delete for this entry is still sitting in the
+  /// local sync outbox, not yet confirmed by the server.
+  final bool pendingSync;
 
   bool get isIncome => type == 'income';
 

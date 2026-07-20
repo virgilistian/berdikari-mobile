@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../data/repositories/auth_repository.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../widgets/sync_status_indicator.dart';
 import 'nav_registry.dart';
 
 /// Authenticated navigation shell: permission-driven bottom nav
@@ -29,26 +30,38 @@ class AppShell extends StatelessWidget {
 
     return Scaffold(
       body: SafeArea(child: child),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: pinnedIndex >= 0
-            ? pinnedIndex
-            : (onMorePage ? moreIndex : 0),
-        onDestinationSelected: (index) {
-          if (index < pinned.length) {
-            context.go(pinned[index].route);
-          } else {
-            _showMoreSheet(context, more, l10n);
-          }
-        },
-        destinations: [
-          for (final item in pinned)
-            NavigationDestination(
-              icon: Icon(item.icon),
-              label: item.label(l10n),
-            ),
-          NavigationDestination(
-            icon: const Icon(Icons.more_horiz),
-            label: l10n.navMore,
+      // Sync status sits above the nav bar (own layout space, never
+      // overlays a screen's own content — floating over `child` risked
+      // sitting on top of per-screen tabs/AppBar actions near the top).
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SafeArea(
+            bottom: false,
+            child: SyncStatusIndicator(),
+          ),
+          NavigationBar(
+            selectedIndex: pinnedIndex >= 0
+                ? pinnedIndex
+                : (onMorePage ? moreIndex : 0),
+            onDestinationSelected: (index) {
+              if (index < pinned.length) {
+                context.go(pinned[index].route);
+              } else {
+                _showMoreSheet(context, more, l10n);
+              }
+            },
+            destinations: [
+              for (final item in pinned)
+                NavigationDestination(
+                  icon: Icon(item.icon),
+                  label: item.label(l10n),
+                ),
+              NavigationDestination(
+                icon: const Icon(Icons.more_horiz),
+                label: l10n.navMore,
+              ),
+            ],
           ),
         ],
       ),
