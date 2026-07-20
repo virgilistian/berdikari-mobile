@@ -50,7 +50,7 @@ class ApiClient {
   /// Reads the persisted Sanctum token; returns null when logged out.
   final Future<String?> Function() tokenProvider;
   final http.Client _http;
-  final String _baseUrl;
+  String _baseUrl;
 
   /// Invoked on any 401 response. Mutable so it can be wired to
   /// [AuthRepository.clearSession] after both objects exist.
@@ -75,6 +75,14 @@ class ApiClient {
       _send('PUT', path, body: body);
 
   Future<Map<String, dynamic>> delete(String path) => _send('DELETE', path);
+
+  /// Repoints the client at a Remote Config-provided base URL, once fetched.
+  /// No-op for an empty value — the compile-time [Env.apiBaseUrl] default
+  /// stays in effect until a non-empty override arrives.
+  void applyBaseUrlOverride(String baseUrl) {
+    if (baseUrl.isEmpty) return;
+    _baseUrl = baseUrl;
+  }
 
   Future<Map<String, dynamic>> _send(
     String method,

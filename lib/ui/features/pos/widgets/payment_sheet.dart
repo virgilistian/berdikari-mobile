@@ -16,6 +16,14 @@ class PaymentSheet extends StatefulWidget {
   State<PaymentSheet> createState() => _PaymentSheetState();
 }
 
+/// Quick cash presets (mirrors berdikari-web `pos/index.vue`'s
+/// `quickAmounts`): the four smallest standard notes at or above the
+/// total, so the cashier never sees an amount that can't cover the bill.
+List<int> _quickAmounts(int total) {
+  const bases = [5000, 10000, 20000, 50000, 100000];
+  return bases.where((b) => b >= total).take(4).toList();
+}
+
 class _PaymentSheetState extends State<PaymentSheet> {
   final _cashController = TextEditingController();
   final _customerController = TextEditingController();
@@ -112,6 +120,24 @@ class _PaymentSheetState extends State<PaymentSheet> {
               RupiahField(
                 controller: _cashController,
                 label: l10n.cashReceivedLabel,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final amount in _quickAmounts(total))
+                    ActionChip(
+                      label: Text(formatRupiah(amount)),
+                      onPressed: () => setState(
+                          () => _cashController.text = formatRupiahDigits(amount)),
+                    ),
+                  ActionChip(
+                    label: Text(l10n.exactAmountButton),
+                    onPressed: () => setState(
+                        () => _cashController.text = formatRupiahDigits(total)),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
             ],

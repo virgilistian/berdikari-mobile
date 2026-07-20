@@ -15,6 +15,7 @@ class CashierShift {
     required this.openedAt,
     required this.closedAt,
     required this.cashierName,
+    this.paymentBreakdown = const {},
   });
 
   factory CashierShift.fromJson(Map<String, dynamic> json) => CashierShift(
@@ -36,7 +37,16 @@ class CashierShift {
         closedAt: parseDate(json['closed_at']),
         cashierName:
             (json['cashier'] as Map<String, dynamic>?)?['name'] as String?,
+        paymentBreakdown: _parseBreakdown(json['payment_breakdown']),
       );
+
+  static Map<String, int> _parseBreakdown(dynamic value) {
+    if (value is! Map) return const {};
+    return {
+      for (final entry in value.entries)
+        entry.key.toString(): parseRupiah(entry.value),
+    };
+  }
 
   final String id;
 
@@ -53,5 +63,14 @@ class CashierShift {
   final DateTime? closedAt;
   final String? cashierName;
 
+  /// Payment method -> amount, e.g. `{cash: 50000, qris: 20000}`. Present
+  /// on the active shift (live) and on closed shifts (final).
+  final Map<String, int> paymentBreakdown;
+
   bool get isOpen => status == 'open';
+
+  /// `closing_cash - (opening_cash + cash portion of sales)` — the live
+  /// difference preview shown while the cashier types the closing amount,
+  /// mirrors berdikari-web `shift.vue`'s `cashDiff` computed.
+  int expectedCashLive() => openingCash + (paymentBreakdown['cash'] ?? 0);
 }

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../../data/models/finance.dart';
 import '../../../../data/repositories/finance_repository.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/rupiah_field.dart';
 import '../view_models/finance_form_view_model.dart';
@@ -36,12 +37,24 @@ class _FinanceNewScreenState extends State<_FinanceNewScreen> {
   final _noteController = TextEditingController();
   String _type = 'expense';
   String? _category;
+  DateTime _occurredAt = DateTime.now();
 
   @override
   void dispose() {
     _amountController.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _occurredAt,
+      firstDate: DateTime(now.year - 2),
+      lastDate: now,
+    );
+    if (picked != null) setState(() => _occurredAt = picked);
   }
 
   void _switchType(String type) {
@@ -61,6 +74,7 @@ class _FinanceNewScreenState extends State<_FinanceNewScreen> {
       amount: parseRupiahInput(_amountController.text),
       category: category,
       note: _noteController.text.trim(),
+      occurredAt: _occurredAt,
     );
     if (entry != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -118,6 +132,14 @@ class _FinanceNewScreenState extends State<_FinanceNewScreen> {
                 validator: (value) => parseRupiahInput(value ?? '') <= 0
                     ? l10n.financeAmountRequired
                     : null,
+              ),
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: _pickDate,
+                child: InputDecorator(
+                  decoration: InputDecoration(labelText: l10n.financeDateLabel),
+                  child: Text(formatIndonesianDate(_occurredAt)),
+                ),
               ),
               const SizedBox(height: 16),
               Text(l10n.financeCategoryLabel, style: theme.textTheme.bodySmall),

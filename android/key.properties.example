@@ -1,0 +1,10 @@
+# Copy this file to android/key.properties (gitignored) and fill in real values.
+# Generate the keystore yourself, e.g.:
+#   keytool -genkey -v -keystore berdikari-release.keystore -alias berdikari \
+#     -keyalg RSA -keysize 2048 -validity 10000
+# Never commit the .keystore/.jks file or this filled-in file.
+
+storeFile=/absolute/path/to/berdikari-release.keystore
+storePassword=REPLACE_ME
+keyAlias=berdikari
+keyPassword=REPLACE_ME

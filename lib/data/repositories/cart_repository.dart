@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../models/order.dart';
 import '../models/product.dart';
 import 'auth_repository.dart';
+import 'offline_queue_repository.dart';
 import '../services/client_uuid.dart';
-import '../services/sales_service.dart';
 
 /// One line in the POS cart. Quantities are managed by [CartRepository].
 class CartItem {
@@ -23,17 +23,20 @@ class CartItem {
   int get subtotal => unitPrice * quantity;
 }
 
-/// POS cart — mirrors berdikari-web `cart.ts` (offline queue deferred to
-/// Phase 6). App-scoped [ChangeNotifier] so the cart survives navigation
-/// between tabs during a shift.
+/// POS cart — mirrors berdikari-web `cart.ts`. Unlike web (which tries the
+/// server first and only queues on failure), every checkout here is
+/// offline-first: it's written to [OfflineQueueRepository] immediately and
+/// synced in the background, per product decision.
+/// App-scoped [ChangeNotifier] so the cart survives navigation between
+/// tabs during a shift.
 class CartRepository extends ChangeNotifier {
   CartRepository({
-    required SalesService salesService,
+    required OfflineQueueRepository offlineQueue,
     required AuthRepository authRepository,
-  })  : _sales = salesService,
+  })  : _offlineQueue = offlineQueue,
         _auth = authRepository;
 
-  final SalesService _sales;
+  final OfflineQueueRepository _offlineQueue;
   final AuthRepository _auth;
 
   final List<CartItem> _items = [];
@@ -88,10 +91,13 @@ class CartRepository extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Submits the cart as a completed order. [payment] is the amount
-  /// tendered; an empty payments list means pay-later. Clears the cart on
-  /// success and returns the receipt-shaped order.
-  Future<Order> checkout({
+  /// Enqueues the cart for checkout — always offline-first (see class doc).
+  /// [action] is `complete` (paid or pay-later, depending on [payment]) or
+  /// `hold` (Simpan). Clears the cart immediately and returns a
+  /// receipt-shaped [Order] synthesized from the queued payload, so the UI
+  /// never waits on the network.
+  Future<Order> submit({
+    required String action,
     int? payment,
     String method = 'cash',
     String? customerName,
@@ -102,7 +108,7 @@ class CartRepository extends ChangeNotifier {
     final payload = {
       'business_id': _auth.user?.businessId,
       'client_uuid': generateClientUuid(),
-      'action': 'complete',
+      'action': action,
       'customer_name':
           (customerName != null && customerName.isNotEmpty) ? customerName : null,
       'items': [
@@ -111,6 +117,7 @@ class CartRepository extends ChangeNotifier {
             'product_id': item.productId,
             'quantity': item.quantity,
             'unit_price': item.unitPrice,
+            'name': item.name,
           },
       ],
       'payments': [
@@ -119,8 +126,27 @@ class CartRepository extends ChangeNotifier {
       ],
     };
 
-    final order = await _sales.submitOrder(payload);
+    final pending = await _offlineQueue.enqueue(payload, totalAmount);
     clear();
-    return order;
+    return Order.fromPending(pending);
   }
+
+  /// "Bayar Sekarang" — pays [payment] now (or leaves it unpaid if 0/null,
+  /// i.e. "Bayar Nanti" when called with no payment).
+  Future<Order> checkout({
+    int? payment,
+    String method = 'cash',
+    String? customerName,
+  }) =>
+      submit(
+        action: 'complete',
+        payment: payment,
+        method: method,
+        customerName: customerName,
+      );
+
+  /// "Simpan" — holds the order without deducting stock or requiring
+  /// payment; finished later from the Orders screen.
+  Future<Order> hold({String? customerName}) =>
+      submit(action: 'hold', customerName: customerName);
 }

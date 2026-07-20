@@ -3,11 +3,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'config/remote_config_service.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/cart_repository.dart';
 import 'data/repositories/catalog_repository.dart';
 import 'data/repositories/daily_stock_repository.dart';
 import 'data/repositories/finance_repository.dart';
+import 'data/repositories/offline_queue_repository.dart';
 import 'data/repositories/orders_repository.dart';
 import 'data/repositories/shift_repository.dart';
 import 'data/repositories/stock_repository.dart';
@@ -30,6 +32,7 @@ class BerdikariApp extends StatefulWidget {
     this.salesService,
     this.inventoryService,
     this.financeService,
+    this.offlineQueueRepository,
   });
 
   /// Test seams: inject pre-configured fakes. Production leaves them null.
@@ -38,6 +41,11 @@ class BerdikariApp extends StatefulWidget {
   final SalesService? salesService;
   final InventoryService? inventoryService;
   final FinanceService? financeService;
+
+  /// Test seam: inject a repository that skips [OfflineQueueRepository.init]
+  /// (real `Connectivity`/`SharedPreferences` platform channels aren't
+  /// available under `flutter test`). Production leaves this null.
+  final OfflineQueueRepository? offlineQueueRepository;
 
   @override
   State<BerdikariApp> createState() => _BerdikariAppState();
@@ -48,6 +56,7 @@ class _BerdikariAppState extends State<BerdikariApp> {
   late final ApiClient _apiClient;
   late final AuthRepository _authRepository;
   late final CatalogRepository _catalogRepository;
+  late final OfflineQueueRepository _offlineQueueRepository;
   late final CartRepository _cartRepository;
   late final ShiftRepository _shiftRepository;
   late final OrdersRepository _ordersRepository;
@@ -64,6 +73,13 @@ class _BerdikariAppState extends State<BerdikariApp> {
     super.initState();
     _tokenStorage = TokenStorage();
     _apiClient = ApiClient(tokenProvider: _tokenStorage.read);
+    // Fire-and-forget: never delay startup/login on a Remote Config round
+    // trip. Applies only if/when a non-empty override arrives.
+    RemoteConfigService()
+        .fetchApiBaseUrlOverride()
+        .then((override) => override != null
+            ? _apiClient.applyBaseUrlOverride(override)
+            : null);
 
     if (widget.authRepository != null) {
       _authRepository = widget.authRepository!;
@@ -86,11 +102,20 @@ class _BerdikariAppState extends State<BerdikariApp> {
         widget.financeService ?? FinanceService(apiClient: _apiClient);
 
     _catalogRepository = CatalogRepository(catalogService: catalogService);
+    if (widget.offlineQueueRepository != null) {
+      _offlineQueueRepository = widget.offlineQueueRepository!;
+    } else {
+      _offlineQueueRepository =
+          OfflineQueueRepository(salesService: _salesService)..init();
+    }
     _cartRepository = CartRepository(
-      salesService: _salesService,
+      offlineQueue: _offlineQueueRepository,
       authRepository: _authRepository,
     );
-    _shiftRepository = ShiftRepository(salesService: _salesService);
+    _shiftRepository = ShiftRepository(
+      salesService: _salesService,
+      offlineQueue: _offlineQueueRepository,
+    );
     _ordersRepository = OrdersRepository(
       salesService: _salesService,
       authRepository: _authRepository,
@@ -126,6 +151,8 @@ class _BerdikariAppState extends State<BerdikariApp> {
         Provider<ApiClient>.value(value: _apiClient),
         ChangeNotifierProvider<AuthRepository>.value(value: _authRepository),
         Provider<CatalogRepository>.value(value: _catalogRepository),
+        ChangeNotifierProvider<OfflineQueueRepository>.value(
+            value: _offlineQueueRepository),
         ChangeNotifierProvider<CartRepository>.value(value: _cartRepository),
         ChangeNotifierProvider<ShiftRepository>.value(value: _shiftRepository),
         Provider<OrdersRepository>.value(value: _ordersRepository),

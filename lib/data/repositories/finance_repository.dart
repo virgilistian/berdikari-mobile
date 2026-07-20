@@ -100,6 +100,7 @@ class FinanceRepository extends ChangeNotifier {
     required int amount,
     required String category,
     String? note,
+    DateTime? occurredAt,
   }) async {
     final entry = await _finance.createEntry(
       businessId: _auth.user?.businessId,
@@ -107,13 +108,20 @@ class FinanceRepository extends ChangeNotifier {
       amount: amount,
       category: category,
       note: note,
+      occurredAt: occurredAt == null ? null : _isoDate(occurredAt),
     );
     await fetchAll();
     return entry;
   }
 
+  /// Throws [ApiException] on failure (e.g. the API rejecting deletion of
+  /// an auto-generated entry with a 422) so the UI can surface the
+  /// server's message instead of failing silently.
   Future<void> deleteEntry(String id) async {
-    await _finance.deleteEntry(id);
-    await fetchAll();
+    try {
+      await _finance.deleteEntry(id);
+    } finally {
+      await fetchAll();
+    }
   }
 }

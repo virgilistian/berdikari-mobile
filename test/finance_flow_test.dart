@@ -31,9 +31,12 @@ void main() {
     await tester.enterText(find.widgetWithText(TextFormField, 'Jumlah'), '25000');
     await tester.tap(find.widgetWithText(ChoiceChip, 'Belanja Bahan'));
     await tester.pumpAndSettle();
-    final saveButton = find.widgetWithText(ElevatedButton, 'Simpan Pengeluaran');
-    await tester.ensureVisible(saveButton);
+    // Scroll the form down so the save button is built and reachable —
+    // scrollUntilVisible can't be used unscoped here since TextFormField's
+    // internal EditableText also registers a Scrollable.
+    await tester.drag(find.byType(ListView).first, const Offset(0, -400));
     await tester.pumpAndSettle();
+    final saveButton = find.widgetWithText(ElevatedButton, 'Simpan Pengeluaran');
     await tester.tap(saveButton);
     await tester.pumpAndSettle();
 

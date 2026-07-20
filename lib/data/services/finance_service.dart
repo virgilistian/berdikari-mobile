@@ -47,6 +47,7 @@ class FinanceService {
     required int amount,
     required String category,
     String? note,
+    String? occurredAt,
   }) async {
     final response = await _api.post('/finance', body: {
       'business_id': ?businessId,
@@ -54,6 +55,7 @@ class FinanceService {
       'amount': amount,
       'category': category,
       if (note != null && note.isNotEmpty) 'note': note,
+      if (occurredAt != null && occurredAt.isNotEmpty) 'occurred_at': occurredAt,
     });
     return FinanceEntry.fromJson(response['data'] as Map<String, dynamic>);
   }

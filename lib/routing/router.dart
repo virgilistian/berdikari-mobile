@@ -17,6 +17,7 @@ import '../ui/features/inventory/views/open_stock_view.dart';
 import '../ui/features/inventory/views/stock_valuation_view.dart';
 import '../ui/features/pos/views/orders_view.dart';
 import '../ui/features/pos/views/pos_view.dart';
+import '../ui/features/pos/views/shift_history_view.dart';
 import '../ui/features/pos/views/shift_view.dart';
 import '../ui/features/reports/views/reports_view.dart';
 import '../ui/features/settings/views/password_view.dart';
@@ -30,6 +31,7 @@ abstract final class AppRoutes {
   static const home = '/';
   static const pos = '/pos';
   static const posShift = '/pos/shift';
+  static const posShiftHistory = '/pos/shift/history';
   static const posOrders = '/pos/orders';
   static const catalog = '/catalog';
   static const inventory = '/inventory';
@@ -49,6 +51,7 @@ const _implementedRoutes = {
   AppRoutes.home,
   AppRoutes.pos,
   AppRoutes.posShift,
+  AppRoutes.posShiftHistory,
   AppRoutes.catalog,
   AppRoutes.inventory,
   AppRoutes.finance,
@@ -118,6 +121,10 @@ GoRouter createRouter(AuthRepository auth) => GoRouter(
             GoRoute(
               path: AppRoutes.posShift,
               builder: (context, state) => const ShiftView(),
+            ),
+            GoRoute(
+              path: AppRoutes.posShiftHistory,
+              builder: (context, state) => const ShiftHistoryView(),
             ),
             GoRoute(
               path: AppRoutes.posOrders,

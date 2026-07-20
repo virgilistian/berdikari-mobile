@@ -1,7 +1,9 @@
+import 'package:berdikari_mobile/data/local/pending_order_store.dart';
 import 'package:berdikari_mobile/data/models/auth_user.dart';
 import 'package:berdikari_mobile/data/models/daily_stock.dart';
 import 'package:berdikari_mobile/data/models/finance.dart';
 import 'package:berdikari_mobile/data/models/order.dart';
+import 'package:berdikari_mobile/data/models/pending_order.dart';
 import 'package:berdikari_mobile/data/models/product.dart';
 import 'package:berdikari_mobile/data/models/sales_summary.dart';
 import 'package:berdikari_mobile/data/models/shift.dart';
@@ -407,6 +409,19 @@ StockRow sampleStockRow({
       isLow: isLow ?? quantity < minStock,
     );
 
+/// In-memory pending-order queue store — no `shared_preferences` platform
+/// channel, which can hang (rather than cleanly throw) under
+/// `TestWidgetsFlutterBinding` in this environment.
+class FakePendingOrderStore extends PendingOrderStore {
+  List<PendingOrder> _orders = [];
+
+  @override
+  Future<List<PendingOrder>> load() async => _orders;
+
+  @override
+  Future<void> save(List<PendingOrder> orders) async => _orders = orders;
+}
+
 /// SalesService that answers from fixtures instead of HTTP.
 class FakeSalesService extends SalesService {
   FakeSalesService({
@@ -420,9 +435,19 @@ class FakeSalesService extends SalesService {
   ApiException? checkoutError;
   Map<String, dynamic>? lastCheckoutPayload;
 
+  /// When true, every [submitOrder] throws a plain (non-[ApiException])
+  /// error — simulates a persistent network failure, which
+  /// [OfflineQueueRepository.drain] treats as "still offline" and leaves
+  /// the order queued (never marked failed) no matter how many times it
+  /// retries.
+  bool alwaysThrowNetworkError = false;
+
   @override
   Future<Order> submitOrder(Map<String, dynamic> payload) async {
     lastCheckoutPayload = payload;
+    if (alwaysThrowNetworkError) {
+      throw Exception('network down');
+    }
     final error = checkoutError;
     if (error != null) throw error;
 
@@ -573,12 +598,14 @@ class FakeFinanceService extends FinanceService {
     required int amount,
     required String category,
     String? note,
+    String? occurredAt,
   }) async {
     lastCreatePayload = {
       'type': type,
       'amount': amount,
       'category': category,
       'note': note,
+      'occurred_at': occurredAt,
     };
     final entry = FinanceEntry(
       id: 'f${_nextId++}',
@@ -586,7 +613,7 @@ class FakeFinanceService extends FinanceService {
       amount: amount,
       category: category,
       note: note,
-      occurredAt: DateTime.now(),
+      occurredAt: occurredAt != null ? DateTime.parse(occurredAt) : DateTime.now(),
     );
     entries = [...entries, entry];
     return entry;

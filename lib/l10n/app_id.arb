@@ -1114,5 +1114,213 @@
   "reportExportCsv": "Unduh CSV",
   "@reportExportCsv": {
     "description": "Tombol ekspor laporan ke CSV"
+  },
+
+  "receiptPendingSync": "Tersimpan Offline",
+  "@receiptPendingSync": {
+    "description": "Judul struk saat transaksi masih menunggu sinkronisasi"
+  },
+  "receiptPendingSyncMessage": "Akan disinkronkan otomatis saat koneksi kembali",
+  "@receiptPendingSyncMessage": {
+    "description": "Pesan struk saat transaksi masih menunggu sinkronisasi"
+  },
+  "payLaterButton": "Bayar Nanti",
+  "@payLaterButton": {
+    "description": "Tombol selesaikan pesanan tanpa pembayaran"
+  },
+  "holdOrderButton": "Simpan",
+  "@holdOrderButton": {
+    "description": "Tombol simpan pesanan (tahan, belum dibayar/diproses)"
+  },
+  "cancelCartButton": "Batalkan Pesanan",
+  "@cancelCartButton": {
+    "description": "Tombol batalkan seluruh keranjang"
+  },
+  "cancelCartConfirm": "Yakin batalkan pesanan ini?",
+  "@cancelCartConfirm": {
+    "description": "Pertanyaan konfirmasi batalkan keranjang"
+  },
+  "cancelCartConfirmYes": "Ya, batalkan",
+  "@cancelCartConfirmYes": {
+    "description": "Konfirmasi ya batalkan keranjang"
+  },
+  "cancelCartConfirmNo": "Tidak",
+  "@cancelCartConfirmNo": {
+    "description": "Konfirmasi tidak batalkan keranjang"
+  },
+  "exactAmountButton": "Uang Pas",
+  "@exactAmountButton": {
+    "description": "Tombol isi uang diterima sesuai total tagihan"
+  },
+  "posSearchHint": "Cari menu...",
+  "@posSearchHint": {
+    "description": "Placeholder pencarian produk di POS"
+  },
+  "shiftReminderMessage": "Shift belum dibuka — transaksi tetap bisa diproses.",
+  "@shiftReminderMessage": {
+    "description": "Pesan pengingat shift belum dibuka (bukan penghalang transaksi)"
+  },
+  "posOffline": "Mode offline — transaksi tetap tersimpan di perangkat",
+  "@posOffline": {
+    "description": "Status POS: sedang offline"
+  },
+  "posOfflineWithQueue": "Mode offline — {count} transaksi menunggu sinkronisasi",
+  "@posOfflineWithQueue": {
+    "description": "Status POS: offline dengan transaksi tertunda",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "posSyncing": "Menyinkronkan {count} transaksi...",
+  "@posSyncing": {
+    "description": "Status POS: sedang menyinkronkan",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "posQueuedWaiting": "{count} transaksi offline menunggu sinkronisasi",
+  "@posQueuedWaiting": {
+    "description": "Status POS: ada transaksi menunggu sinkronisasi",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "posRejectedByServer": "{count} transaksi ditolak server",
+  "@posRejectedByServer": {
+    "description": "Status POS: ada transaksi ditolak server",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shiftHistoryTitle": "Riwayat Shift",
+  "@shiftHistoryTitle": {
+    "description": "Judul halaman riwayat shift"
+  },
+  "shiftHistoryEmpty": "Belum ada riwayat shift.",
+  "@shiftHistoryEmpty": {
+    "description": "Pesan riwayat shift kosong"
+  },
+  "shiftStatusOpen": "Aktif",
+  "@shiftStatusOpen": {
+    "description": "Status shift: aktif"
+  },
+  "shiftStatusClosed": "Selesai",
+  "@shiftStatusClosed": {
+    "description": "Status shift: selesai/ditutup"
+  },
+  "shiftDetailTitle": "Detail Shift",
+  "@shiftDetailTitle": {
+    "description": "Judul lembar detail shift"
+  },
+  "shiftCashierLabel": "Kasir",
+  "@shiftCashierLabel": {
+    "description": "Label nama kasir pada detail shift"
+  },
+  "shiftOpenedAtLabel": "Buka",
+  "@shiftOpenedAtLabel": {
+    "description": "Label waktu buka shift"
+  },
+  "shiftClosedAtLabel": "Tutup",
+  "@shiftClosedAtLabel": {
+    "description": "Label waktu tutup shift"
+  },
+  "shiftPaymentBreakdownTitle": "Rekapitulasi Pembayaran",
+  "@shiftPaymentBreakdownTitle": {
+    "description": "Judul rincian pembayaran per metode pada shift"
+  },
+  "cashDifferenceValue": "Selisih: {value}",
+  "@cashDifferenceValue": {
+    "description": "Nilai selisih kas langsung saat mengisi kas akhir",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "shiftCloseNotPermitted": "Anda tidak memiliki izin untuk menutup shift ini.",
+  "@shiftCloseNotPermitted": {
+    "description": "Pesan saat pengguna tidak memiliki izin pos.close"
+  },
+  "shiftQueuedTransactions": "{count} transaksi belum tersinkron",
+  "@shiftQueuedTransactions": {
+    "description": "Jumlah transaksi offline belum tersinkron pada layar shift",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shiftFailedTransactions": "{count} transaksi ditolak server",
+  "@shiftFailedTransactions": {
+    "description": "Jumlah transaksi ditolak server pada layar shift",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shiftDiscardFailed": "Hapus yang ditolak",
+  "@shiftDiscardFailed": {
+    "description": "Tombol hapus transaksi yang ditolak server"
+  },
+  "ordersBalanceDueLabel": "Sisa (Piutang)",
+  "@ordersBalanceDueLabel": {
+    "description": "Label sisa tagihan pesanan"
+  },
+  "ordersRequiresConnection": "Perlu koneksi internet untuk aksi ini.",
+  "@ordersRequiresConnection": {
+    "description": "Pesan saat aksi pesanan memerlukan koneksi internet"
+  },
+  "ordersCompleteAction": "Selesaikan & Bayar",
+  "@ordersCompleteAction": {
+    "description": "Tombol selesaikan dan bayar pesanan tertunda"
+  },
+  "ordersPayAction": "Terima Pembayaran",
+  "@ordersPayAction": {
+    "description": "Tombol terima pembayaran pesanan belum lunas"
+  },
+  "ordersCancelAction": "Batalkan Pesanan",
+  "@ordersCancelAction": {
+    "description": "Tombol batalkan pesanan tertunda"
+  },
+  "ordersCancelConfirmTitle": "Batalkan Pesanan Ini?",
+  "@ordersCancelConfirmTitle": {
+    "description": "Judul konfirmasi batalkan pesanan"
+  },
+  "ordersCancelConfirmMessage": "Pesanan yang dibatalkan tidak bisa dikembalikan lagi.",
+  "@ordersCancelConfirmMessage": {
+    "description": "Isi konfirmasi batalkan pesanan"
+  },
+  "ordersRefundAction": "Refund Pesanan",
+  "@ordersRefundAction": {
+    "description": "Tombol refund pesanan selesai"
+  },
+  "ordersRefundConfirmTitle": "Refund Pesanan Ini?",
+  "@ordersRefundConfirmTitle": {
+    "description": "Judul konfirmasi refund pesanan"
+  },
+  "ordersRefundConfirmMessage": "Uang pembayaran akan dianggap dikembalikan ke pelanggan dan pesanan ditandai refund.",
+  "@ordersRefundConfirmMessage": {
+    "description": "Isi konfirmasi refund pesanan"
+  },
+  "financeByCategoryTitle": "Rincian per Kategori",
+  "@financeByCategoryTitle": {
+    "description": "Judul rincian transaksi keuangan per kategori"
+  },
+  "financeAutoBadge": "Otomatis · POS",
+  "@financeAutoBadge": {
+    "description": "Badge transaksi keuangan yang dibuat otomatis dari penjualan"
+  },
+  "financeDateLabel": "Tanggal transaksi",
+  "@financeDateLabel": {
+    "description": "Label tanggal transaksi pada formulir keuangan baru"
   }
 }

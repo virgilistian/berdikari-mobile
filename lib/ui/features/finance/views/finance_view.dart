@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../../data/models/finance.dart';
 import '../../../../data/repositories/auth_repository.dart';
 import '../../../../data/repositories/finance_repository.dart';
+import '../../../../data/services/api_client.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
@@ -65,7 +66,19 @@ class _FinanceScreen extends StatelessWidget {
       ),
     );
     if (confirmed == true && context.mounted) {
-      await context.read<FinanceRepository>().deleteEntry(entry.id);
+      try {
+        await context.read<FinanceRepository>().deleteEntry(entry.id);
+      } on ApiException catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(e.message)));
+        }
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(l10n.genericError)));
+        }
+      }
     }
   }
 
@@ -181,6 +194,33 @@ class _FinanceScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (repo.summary.incomeByCategory.isNotEmpty ||
+                      repo.summary.expenseByCategory.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(l10n.financeByCategoryTitle,
+                        style: theme.textTheme.titleSmall),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final entry in repo.summary.incomeByCategory.entries)
+                          _CategoryChip(
+                            label: entry.key,
+                            amount: entry.value,
+                            color: theme.colorScheme.success,
+                            prefix: '+',
+                          ),
+                        for (final entry in repo.summary.expenseByCategory.entries)
+                          _CategoryChip(
+                            label: entry.key,
+                            amount: entry.value,
+                            color: theme.colorScheme.error,
+                            prefix: '-',
+                          ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Text(l10n.financeHistoryTitle,
                       style: theme.textTheme.titleSmall),
@@ -206,7 +246,7 @@ class _FinanceScreen extends StatelessWidget {
                     for (final entry in repo.entries)
                       Dismissible(
                         key: ValueKey(entry.id),
-                        direction: canDelete
+                        direction: canDelete && !entry.isAuto
                             ? DismissDirection.endToStart
                             : DismissDirection.none,
                         background: Container(
@@ -267,6 +307,41 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
+class _CategoryChip extends StatelessWidget {
+  const _CategoryChip({
+    required this.label,
+    required this.amount,
+    required this.color,
+    required this.prefix,
+  });
+
+  final String label;
+  final int amount;
+  final Color color;
+  final String prefix;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label, style: theme.textTheme.bodySmall),
+          Text('$prefix${formatRupiah(amount)}',
+              style: theme.textTheme.titleSmall!.copyWith(color: color)),
+        ],
+      ),
+    );
+  }
+}
+
 class _FinanceEntryTile extends StatelessWidget {
   const _FinanceEntryTile({required this.entry});
 
@@ -274,6 +349,7 @@ class _FinanceEntryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final color = entry.isIncome ? theme.colorScheme.success : theme.colorScheme.error;
 
@@ -304,7 +380,11 @@ class _FinanceEntryTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(entry.category, style: theme.textTheme.titleSmall),
-                  if (entry.note != null && entry.note!.isNotEmpty)
+                  if (entry.isAuto)
+                    Text(l10n.financeAutoBadge,
+                        style: theme.textTheme.bodySmall!
+                            .copyWith(color: theme.colorScheme.primary))
+                  else if (entry.note != null && entry.note!.isNotEmpty)
                     Text(entry.note!,
                         style: theme.textTheme.bodySmall,
                         maxLines: 1,

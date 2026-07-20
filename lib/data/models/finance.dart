@@ -34,6 +34,10 @@ class FinanceEntry {
     required this.category,
     required this.note,
     required this.occurredAt,
+    this.businessId,
+    this.businessName,
+    this.sourceType,
+    this.sourceId,
   });
 
   factory FinanceEntry.fromJson(Map<String, dynamic> json) => FinanceEntry(
@@ -43,6 +47,10 @@ class FinanceEntry {
         category: json['category'] as String? ?? '',
         note: json['note'] as String?,
         occurredAt: parseDate(json['occurred_at']) ?? DateTime.now(),
+        businessId: json['business_id'] as String?,
+        businessName: json['business_name'] as String?,
+        sourceType: json['source_type'] as String?,
+        sourceId: json['source_id'] as String?,
       );
 
   final String id;
@@ -53,8 +61,21 @@ class FinanceEntry {
   final String category;
   final String? note;
   final DateTime occurredAt;
+  final String? businessId;
+  final String? businessName;
+
+  /// `manual` (or null) for cashier-entered rows; anything else (e.g.
+  /// `sale_order`, `sale_order_refund`) means the API generated this entry
+  /// automatically and will refuse to delete it.
+  final String? sourceType;
+  final String? sourceId;
 
   bool get isIncome => type == 'income';
+
+  /// True for entries the API generated automatically (from a POS sale) —
+  /// `DELETE /finance/{id}` rejects these with a 422, so the UI should
+  /// never offer a delete action for them.
+  bool get isAuto => sourceType != null && sourceType != 'manual';
 }
 
 /// `GET /finance/summary` — totals + per-category breakdown for a range.

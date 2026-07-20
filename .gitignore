@@ -49,3 +49,6 @@ lib/l10n/generated/
 *.keystore
 key.properties
 .env*
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
