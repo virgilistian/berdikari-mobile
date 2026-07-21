@@ -740,6 +740,7 @@ FinanceEntry sampleFinanceEntry({
   int amount = 20000,
   String category = 'Belanja Bahan',
   String? note,
+  DateTime? occurredAt,
 }) =>
     FinanceEntry(
       id: id,
@@ -747,5 +748,5 @@ FinanceEntry sampleFinanceEntry({
       amount: amount,
       category: category,
       note: note,
-      occurredAt: DateTime.now(),
+      occurredAt: occurredAt ?? DateTime.now(),
     );

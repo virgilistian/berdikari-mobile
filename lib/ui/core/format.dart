@@ -50,3 +50,25 @@ String formatIndonesianDate(DateTime date) {
   final month = _indonesianMonths[date.month - 1];
   return '$weekday, ${date.day} $month ${date.year}';
 }
+
+const _indonesianMonthsShort = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'Mei',
+  'Jun',
+  'Jul',
+  'Agu',
+  'Sep',
+  'Okt',
+  'Nov',
+  'Des',
+];
+
+/// "13 Jul 2026" — compact form for date-range filters. Same manual
+/// approach as [formatIndonesianDate], no locale init needed.
+String formatShortDate(DateTime date) {
+  final month = _indonesianMonthsShort[date.month - 1];
+  return '${date.day} $month ${date.year}';
+}

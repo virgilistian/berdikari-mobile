@@ -40,11 +40,16 @@ void main() {
     await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
-    // The summary is now computed locally from the real cached entries
-    // (not a disconnected fake that was always empty), so both the
-    // category and amount legitimately appear more than once: the entry
-    // tile, the by-category breakdown chip, and — for the amount only —
-    // the "Bersih" net card (net == -25000 here since there's no income).
+    // Back on the list, scroll so the entry tile (below the summary cards)
+    // is actually built and findable.
+    await tester.drag(find.byType(RefreshIndicator), const Offset(0, -400));
+    await tester.pumpAndSettle();
+
+    // The summary is now computed locally from the real cached entries (not
+    // a disconnected fake that was always empty), so the category legitimately
+    // appears twice: the entry tile and the by-category breakdown chip. The
+    // category filter itself now lives behind the "Kategori" filter chip, so
+    // it no longer renders every category inline.
     expect(find.text('Belanja Bahan'), findsNWidgets(2));
     expect(find.text('-Rp25.000'), findsNWidgets(3));
   });

@@ -10,10 +10,10 @@ import '../services/client_uuid.dart';
 import '../services/finance_service.dart';
 import 'auth_repository.dart';
 
-/// Period filter for the finance list — mirrors the common presets in
-/// berdikari-web `finance/index.vue`'s period tabs (subset: this app skips
-/// tahunan/kustom to keep the vertical slice small).
-enum FinancePeriod { all, today, week, month }
+/// Period filter for the finance list — mirrors the presets in berdikari-web
+/// `finance/index.vue`'s period tabs (`semua`/`harian`/`mingguan`/`bulanan`/
+/// `tahunan`/`kustom`).
+enum FinancePeriod { all, today, week, month, year, custom }
 
 /// Cash flow (pemasukan/pengeluaran) — mirrors berdikari-web `finance.ts`.
 /// Local-first: [AppDatabase] is the source of truth for every read; the
@@ -41,15 +41,33 @@ class FinanceRepository extends ChangeNotifier {
   bool _loading = false;
   String? _error;
   String _typeFilter = '';
+  String _categoryFilter = '';
   FinancePeriod _period = FinancePeriod.all;
+  DateTime? _customFrom;
+  DateTime? _customTo;
 
   List<FinanceEntry> get entries => _entries;
   FinanceSummary get summary => _summary;
   bool get loading => _loading;
   String? get error => _error;
   String get typeFilter => _typeFilter;
+  String get categoryFilter => _categoryFilter;
   FinancePeriod get period => _period;
+  DateTime? get customFrom => _customFrom;
+  DateTime? get customTo => _customTo;
   int get pendingCount => _db.pendingCountFor('finance_entry');
+
+  /// Categories present within the current period's entries — mirrors
+  /// berdikari-web's `availableCategories` (period-scoped, ignores the
+  /// category filter itself so switching category never shrinks the list).
+  List<String> get availableCategories {
+    final (from, to) = _range;
+    final cats = <String>{
+      for (final e in _db.getFinanceEntries())
+        if (_withinRange(e.occurredAt, from, to)) e.category,
+    };
+    return cats.toList()..sort();
+  }
 
   (String?, String?) get _range {
     final now = DateTime.now();
@@ -66,6 +84,13 @@ class FinanceRepository extends ChangeNotifier {
       case FinancePeriod.month:
         final start = DateTime(today.year, today.month, 1);
         return (_isoDate(start), _isoDate(today));
+      case FinancePeriod.year:
+        return (_isoDate(DateTime(today.year, 1, 1)), _isoDate(today));
+      case FinancePeriod.custom:
+        return (
+          _customFrom == null ? null : _isoDate(_customFrom!),
+          _customTo == null ? null : _isoDate(_customTo!),
+        );
     }
   }
 
@@ -119,8 +144,13 @@ class FinanceRepository extends ChangeNotifier {
         .getFinanceEntries()
         .where((e) => _withinRange(e.occurredAt, from, to))
         .toList();
-    _entries =
-        _typeFilter.isEmpty ? inRange : inRange.where((e) => e.type == _typeFilter).toList();
+    var filtered = _typeFilter.isEmpty
+        ? inRange
+        : inRange.where((e) => e.type == _typeFilter).toList();
+    if (_categoryFilter.isNotEmpty) {
+      filtered = filtered.where((e) => e.category == _categoryFilter).toList();
+    }
+    _entries = filtered;
     _summary = _computeSummary(inRange);
   }
 
@@ -153,8 +183,22 @@ class FinanceRepository extends ChangeNotifier {
     return fetchAll();
   }
 
+  Future<void> setCategoryFilter(String category) {
+    _categoryFilter = category;
+    return fetchAll();
+  }
+
+  /// Mirrors berdikari-web: switching period resets the category filter,
+  /// since categories are scoped to the period and may no longer apply.
   Future<void> setPeriod(FinancePeriod period) {
     _period = period;
+    _categoryFilter = '';
+    return fetchAll();
+  }
+
+  Future<void> setCustomRange({DateTime? from, DateTime? to}) {
+    _customFrom = from;
+    _customTo = to;
     return fetchAll();
   }
 

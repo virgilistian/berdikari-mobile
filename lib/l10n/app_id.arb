@@ -33,6 +33,30 @@
   "@save": {
     "description": "Tombol simpan"
   },
+  "filterClearAction": "Hapus",
+  "@filterClearAction": {
+    "description": "Tombol hapus pilihan pada lembar filter (reusable)"
+  },
+  "filterApplyAction": "Pasang filter",
+  "@filterApplyAction": {
+    "description": "Tombol terapkan filter pada lembar filter (reusable)"
+  },
+  "filterSearchHint": "Cari...",
+  "@filterSearchHint": {
+    "description": "Placeholder kotak pencarian pada lembar filter (reusable)"
+  },
+  "filterNoResults": "Tidak ada hasil yang cocok",
+  "@filterNoResults": {
+    "description": "Keadaan kosong saat pencarian filter tidak menemukan hasil atau daftar pilihan kosong"
+  },
+  "financeFilterTypeChip": "Jenis",
+  "@financeFilterTypeChip": {
+    "description": "Label chip filter jenis transaksi keuangan"
+  },
+  "financeFilterPeriodChip": "Periode",
+  "@financeFilterPeriodChip": {
+    "description": "Label chip filter periode keuangan"
+  },
   "loginTitle": "Masuk",
   "@loginTitle": {
     "description": "Judul halaman masuk"
@@ -783,6 +807,14 @@
   "@financePeriodMonth": {
     "description": "Filter periode keuangan: bulan ini"
   },
+  "financePeriodYear": "Tahunan",
+  "@financePeriodYear": {
+    "description": "Filter periode keuangan: tahunan"
+  },
+  "financePeriodCustom": "Kustom",
+  "@financePeriodCustom": {
+    "description": "Filter periode keuangan: rentang tanggal kustom"
+  },
   "financeIncomeLabel": "Pemasukan",
   "@financeIncomeLabel": {
     "description": "Kartu ringkasan total pemasukan"
@@ -839,6 +871,22 @@
   "financeCategoryRequired": "Pilih kategori terlebih dahulu.",
   "@financeCategoryRequired": {
     "description": "Validasi kategori transaksi keuangan"
+  },
+  "financeCategoryAll": "Semua",
+  "@financeCategoryAll": {
+    "description": "Filter kategori transaksi keuangan: semua"
+  },
+  "financeCustomFromLabel": "Dari",
+  "@financeCustomFromLabel": {
+    "description": "Label tanggal awal pada filter rentang kustom keuangan"
+  },
+  "financeCustomToLabel": "Sampai",
+  "@financeCustomToLabel": {
+    "description": "Label tanggal akhir pada filter rentang kustom keuangan"
+  },
+  "financeCustomPickDate": "Pilih tanggal",
+  "@financeCustomPickDate": {
+    "description": "Placeholder saat tanggal rentang kustom keuangan belum dipilih"
   },
   "financeNoteLabel": "Catatan",
   "@financeNoteLabel": {

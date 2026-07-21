@@ -46,6 +46,61 @@ void main() {
       expect(repo.entries.map((e) => e.id), ['f1']);
     });
 
+    test('setCategoryFilter narrows entries to the chosen category', () async {
+      final service = FakeFinanceService(entries: [
+        sampleFinanceEntry(id: 'f1', type: 'expense', category: 'Belanja Bahan'),
+        sampleFinanceEntry(id: 'f2', type: 'expense', category: 'Sewa'),
+      ]);
+      final repo = FinanceRepository(
+        financeService: service,
+        authRepository: fakeAuthRepository(user: sampleUser(), token: 't'),
+        database: AppDatabase(),
+      );
+      await repo.fetchAll();
+      expect(repo.availableCategories, ['Belanja Bahan', 'Sewa']);
+
+      await repo.setCategoryFilter('Sewa');
+
+      expect(repo.categoryFilter, 'Sewa');
+      expect(repo.entries.map((e) => e.id), ['f2']);
+    });
+
+    test('setPeriod resets a previously chosen category filter', () async {
+      final service = FakeFinanceService(entries: [
+        sampleFinanceEntry(id: 'f1', category: 'Belanja Bahan'),
+      ]);
+      final repo = FinanceRepository(
+        financeService: service,
+        authRepository: fakeAuthRepository(user: sampleUser(), token: 't'),
+        database: AppDatabase(),
+      );
+      await repo.fetchAll();
+      await repo.setCategoryFilter('Belanja Bahan');
+      expect(repo.categoryFilter, 'Belanja Bahan');
+
+      await repo.setPeriod(FinancePeriod.month);
+
+      expect(repo.categoryFilter, '');
+    });
+
+    test('setCustomRange filters entries to the chosen dates', () async {
+      final service = FakeFinanceService(entries: [
+        sampleFinanceEntry(id: 'f1', occurredAt: DateTime(2026, 1, 5)),
+        sampleFinanceEntry(id: 'f2', occurredAt: DateTime(2026, 6, 15)),
+      ]);
+      final repo = FinanceRepository(
+        financeService: service,
+        authRepository: fakeAuthRepository(user: sampleUser(), token: 't'),
+        database: AppDatabase(),
+      );
+      await repo.fetchAll();
+
+      await repo.setPeriod(FinancePeriod.custom);
+      await repo.setCustomRange(from: DateTime(2026, 6, 1), to: DateTime(2026, 6, 30));
+
+      expect(repo.entries.map((e) => e.id), ['f2']);
+    });
+
     test('createEntry writes locally immediately, then syncs to the service',
         () async {
       final service = FakeFinanceService();

@@ -9,6 +9,9 @@ import '../../../../data/services/api_client.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/format.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/filter/date_range_filter_sheet.dart';
+import '../../../core/widgets/filter/filter_chips_bar.dart';
+import '../../../core/widgets/filter/option_filter_sheet.dart';
 import '../../../core/widgets/sync_status_indicator.dart';
 
 String financePeriodLabel(AppLocalizations l10n, FinancePeriod period) =>
@@ -17,7 +20,32 @@ String financePeriodLabel(AppLocalizations l10n, FinancePeriod period) =>
       FinancePeriod.today => l10n.financePeriodToday,
       FinancePeriod.week => l10n.financePeriodWeek,
       FinancePeriod.month => l10n.financePeriodMonth,
+      FinancePeriod.year => l10n.financePeriodYear,
+      FinancePeriod.custom => l10n.financePeriodCustom,
     };
+
+/// Display-only date range for a period preset row's subtitle (GoPay-style
+/// "1 Jul 2026 - 21 Jul 2026"). Never used for actual filtering — that stays
+/// in [FinanceRepository]; `all`/`custom` have no fixed range to show.
+String? _periodRangeSubtitle(FinancePeriod period) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final DateTime start;
+  switch (period) {
+    case FinancePeriod.all:
+    case FinancePeriod.custom:
+      return null;
+    case FinancePeriod.today:
+      return formatShortDate(today);
+    case FinancePeriod.week:
+      start = today.subtract(Duration(days: today.weekday - 1));
+    case FinancePeriod.month:
+      start = DateTime(today.year, today.month, 1);
+    case FinancePeriod.year:
+      start = DateTime(today.year, 1, 1);
+  }
+  return '${formatShortDate(start)} - ${formatShortDate(today)}';
+}
 
 /// `FinanceRepository` is an app-level singleton (provided once in
 /// `app.dart`, shared with the dashboard) — unlike `StockRepository`'s
@@ -115,44 +143,80 @@ class _FinanceScreen extends StatelessWidget {
                           style: theme.textTheme.bodyMedium!
                               .copyWith(color: theme.colorScheme.error)),
                     ),
-                  SizedBox(
-                    height: 40,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        for (final (value, label) in [
-                          ('', l10n.financeTypeAll),
-                          ('income', l10n.financeTypeIncome),
-                          ('expense', l10n.financeTypeExpense),
-                        ])
-                          Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: ChoiceChip(
-                              label: Text(label),
-                              selected: repo.typeFilter == value,
-                              onSelected: (_) => repo.setTypeFilter(value),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 40,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        for (final period in FinancePeriod.values)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: ChoiceChip(
-                              label: Text(financePeriodLabel(l10n, period)),
-                              selected: repo.period == period,
-                              onSelected: (_) => repo.setPeriod(period),
-                            ),
-                          ),
-                      ],
-                    ),
+                  FilterChipsBar(
+                    chips: [
+                      FilterChipData(
+                        label: l10n.financeFilterTypeChip,
+                        isActive: repo.typeFilter.isNotEmpty,
+                        onTap: () async {
+                          final result = await showSingleSelectFilterSheet<String>(
+                            context: context,
+                            title: l10n.financeFilterTypeChip,
+                            selected: repo.typeFilter,
+                            clearValue: '',
+                            options: [
+                              FilterOption(value: '', label: l10n.financeTypeAll),
+                              FilterOption(value: 'income', label: l10n.financeTypeIncome),
+                              FilterOption(value: 'expense', label: l10n.financeTypeExpense),
+                            ],
+                          );
+                          if (result != null) await repo.setTypeFilter(result);
+                        },
+                      ),
+                      FilterChipData(
+                        label: l10n.financeFilterPeriodChip,
+                        isActive: repo.period != FinancePeriod.all,
+                        onTap: () async {
+                          final result = await showDateRangeFilterSheet(
+                            context: context,
+                            title: l10n.financeFilterPeriodChip,
+                            presets: [
+                              for (final period in FinancePeriod.values)
+                                DateRangePresetOption(
+                                  id: period.name,
+                                  label: financePeriodLabel(l10n, period),
+                                  subtitle: _periodRangeSubtitle(period),
+                                ),
+                            ],
+                            customPresetId: FinancePeriod.custom.name,
+                            selectedPresetId: repo.period.name,
+                            customFrom: repo.customFrom,
+                            customTo: repo.customTo,
+                            customFromLabel: l10n.financeCustomFromLabel,
+                            customToLabel: l10n.financeCustomToLabel,
+                            customPickDateLabel: l10n.financeCustomPickDate,
+                          );
+                          if (result == null) return;
+                          final targetPeriod =
+                              FinancePeriod.values.byName(result.presetId);
+                          if (targetPeriod == FinancePeriod.custom) {
+                            await repo.setCustomRange(from: result.from, to: result.to);
+                          }
+                          if (repo.period != targetPeriod) {
+                            await repo.setPeriod(targetPeriod);
+                          }
+                        },
+                      ),
+                      FilterChipData(
+                        label: l10n.financeCategoryLabel,
+                        isActive: repo.categoryFilter.isNotEmpty,
+                        onTap: () async {
+                          final result = await showSingleSelectFilterSheet<String>(
+                            context: context,
+                            title: l10n.financeCategoryLabel,
+                            selected: repo.categoryFilter,
+                            clearValue: '',
+                            searchable: repo.availableCategories.length > 8,
+                            options: [
+                              FilterOption(value: '', label: l10n.financeCategoryAll),
+                              for (final category in repo.availableCategories)
+                                FilterOption(value: category, label: category),
+                            ],
+                          );
+                          if (result != null) await repo.setCategoryFilter(result);
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   Row(
