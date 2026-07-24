@@ -101,7 +101,7 @@ void main() {
       expect(repo.entries.map((e) => e.id), ['f2']);
     });
 
-    test('createEntry writes locally immediately, then syncs to the service',
+    test('saveEntry (create) writes locally immediately, then syncs to the service',
         () async {
       final service = FakeFinanceService();
       final repo = FinanceRepository(
@@ -111,7 +111,7 @@ void main() {
       );
       await repo.fetchAll();
 
-      final entry = await repo.createEntry(
+      final entry = await repo.saveEntry(
         type: 'expense',
         amount: 15000,
         category: 'Belanja Bahan',
@@ -123,11 +123,78 @@ void main() {
       expect(entry.pendingSync, isTrue);
       expect(repo.entries, hasLength(1));
 
-      // createEntry already fired its own background push — let it settle
+      // saveEntry already fired its own background push — let it settle
       // instead of racing it with a second explicit call.
       await pumpEventQueue();
       expect(service.lastCreatePayload!['amount'], 15000);
+      expect(service.lastCreatePayload!['client_uuid'], isNotNull);
       expect(repo.entries.single.pendingSync, isFalse);
+    });
+
+    test('saveEntry (update) edits an already-synced entry through the service', () async {
+      final service = FakeFinanceService(entries: [
+        sampleFinanceEntry(id: 'f1', category: 'Belanja Bahan', amount: 10000),
+      ]);
+      final repo = FinanceRepository(
+        financeService: service,
+        authRepository: fakeAuthRepository(user: sampleUser(), token: 't'),
+        database: AppDatabase(),
+      );
+      await repo.fetchAll();
+
+      final entry = await repo.saveEntry(
+        id: 'f1',
+        type: 'expense',
+        amount: 25000,
+        category: 'Sewa',
+      );
+
+      // Optimistic: local row already reflects the edit.
+      expect(entry.category, 'Sewa');
+      expect(entry.amount, 25000);
+      expect(entry.pendingSync, isTrue);
+
+      await pumpEventQueue();
+      expect(service.lastUpdatePayload!['id'], 'f1');
+      expect(service.lastUpdatePayload!['amount'], 25000);
+      expect(repo.entries.single.pendingSync, isFalse);
+      expect(repo.entries.single.category, 'Sewa');
+    });
+
+    test('saveEntry (update) on a still-unsynced create collapses into the same job',
+        () async {
+      final service = FakeFinanceService()
+        ..failCreate = true; // never resolves — the create job stays pending.
+      final repo = FinanceRepository(
+        financeService: service,
+        authRepository: fakeAuthRepository(user: sampleUser(), token: 't'),
+        database: AppDatabase(),
+      );
+      await repo.fetchAll();
+
+      final created = await repo.saveEntry(
+        type: 'expense',
+        amount: 10000,
+        category: 'Belanja Bahan',
+      );
+      await pumpEventQueue();
+      expect(repo.entries.single.pendingSync, isTrue);
+      expect(repo.pendingCount, 1);
+
+      await repo.saveEntry(
+        id: created.id,
+        type: 'expense',
+        amount: 12000,
+        category: 'Sewa',
+      );
+      await pumpEventQueue();
+
+      // Still one outbox job (payload replaced in place), not a stray PUT
+      // against the fake local id.
+      expect(repo.pendingCount, 1);
+      expect(service.lastUpdatePayload, isNull);
+      expect(repo.entries.single.category, 'Sewa');
+      expect(repo.entries.single.amount, 12000);
     });
 
     test('deleteEntry removes through the service and refreshes the list', () async {

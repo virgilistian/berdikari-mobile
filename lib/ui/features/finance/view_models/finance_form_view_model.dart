@@ -4,13 +4,17 @@ import '../../../../data/models/finance.dart';
 import '../../../../data/repositories/finance_repository.dart';
 import '../../../../data/services/api_client.dart';
 
-/// State for the new cash entry form. Mirrors berdikari-web's
-/// `finance/new.vue` `save` flow.
+/// State for the cash entry create/edit form. Mirrors berdikari-web's
+/// `finance/new.vue` `save` flow and `finance/[id].vue`'s edit flow.
 class FinanceFormViewModel extends ChangeNotifier {
-  FinanceFormViewModel({required FinanceRepository financeRepository})
-      : _finance = financeRepository;
+  FinanceFormViewModel({required FinanceRepository financeRepository, FinanceEntry? existing})
+      : _finance = financeRepository,
+        editing = existing;
 
   final FinanceRepository _finance;
+
+  /// Null when creating a new entry.
+  final FinanceEntry? editing;
 
   bool _saving = false;
   String? _errorMessage;
@@ -29,7 +33,8 @@ class FinanceFormViewModel extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      return await _finance.createEntry(
+      return await _finance.saveEntry(
+        id: editing?.id,
         type: type,
         amount: amount,
         category: category,

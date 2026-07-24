@@ -71,4 +71,70 @@ void main() {
 
     expect(find.text('Tambah Baru'), findsNothing);
   });
+
+  testWidgets('kasir with finance.update can edit an existing entry', (tester) async {
+    final auth = fakeAuthRepository(
+      user: sampleUser(permissions: ['finance.view', 'finance.update']),
+      token: 't',
+    );
+    final financeService = FakeFinanceService(entries: [
+      sampleFinanceEntry(id: 'f1', category: 'Belanja Bahan', amount: 20000),
+    ]);
+    await tester.pumpWidget(BerdikariApp(
+      authRepository: auth,
+      salesService: FakeSalesService(),
+      financeService: financeService,
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Keuangan'));
+    await tester.pumpAndSettle();
+
+    // The tile sits below the summary cards/chips (which repeat the same
+    // category text) — scroll it into the built range and target it
+    // specifically via its enclosing Card, not the category breakdown chip.
+    await tester.drag(find.byType(RefreshIndicator), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(Card, 'Belanja Bahan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ubah Transaksi'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Sewa'));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Simpan Perubahan'));
+    await tester.pumpAndSettle();
+
+    // Back on the list, showing the edited category and unchanged amount.
+    expect(find.text('Ubah Transaksi'), findsNothing);
+    expect(find.widgetWithText(Card, 'Sewa'), findsOneWidget);
+    expect(financeService.lastUpdatePayload!['category'], 'Sewa');
+  });
+
+  testWidgets('viewer without finance.update cannot open an entry for editing',
+      (tester) async {
+    final auth = fakeAuthRepository(
+      user: sampleUser(permissions: ['finance.view']),
+      token: 't',
+    );
+    await tester.pumpWidget(BerdikariApp(
+      authRepository: auth,
+      salesService: FakeSalesService(),
+      financeService: FakeFinanceService(entries: [
+        sampleFinanceEntry(id: 'f1', category: 'Belanja Bahan', amount: 20000),
+      ]),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Keuangan'));
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(RefreshIndicator), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(Card, 'Belanja Bahan'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ubah Transaksi'), findsNothing);
+  });
 }

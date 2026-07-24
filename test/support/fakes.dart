@@ -671,6 +671,11 @@ class FakeFinanceService extends FinanceService {
   FinanceSummary summary;
   int _nextId = 100;
   Map<String, dynamic>? lastCreatePayload;
+  Map<String, dynamic>? lastUpdatePayload;
+
+  /// When true, [createEntry] throws a plain (non-[ApiException]) error —
+  /// simulates a network-level failure so the outbox job stays `pending`.
+  bool failCreate = false;
 
   @override
   Future<List<FinanceEntry>> fetchEntries({
@@ -701,7 +706,9 @@ class FakeFinanceService extends FinanceService {
     String? note,
     String? occurredAt,
     String? shiftId,
+    String? clientUuid,
   }) async {
+    if (failCreate) throw Exception('network error');
     lastCreatePayload = {
       'type': type,
       'amount': amount,
@@ -709,6 +716,7 @@ class FakeFinanceService extends FinanceService {
       'note': note,
       'occurred_at': occurredAt,
       'shift_id': shiftId,
+      'client_uuid': clientUuid,
     };
     final entry = FinanceEntry(
       id: 'f${_nextId++}',
@@ -722,6 +730,38 @@ class FakeFinanceService extends FinanceService {
     );
     entries = [...entries, entry];
     return entry;
+  }
+
+  @override
+  Future<FinanceEntry> updateEntry(
+    String id, {
+    required String type,
+    required int amount,
+    required String category,
+    String? note,
+    String? occurredAt,
+  }) async {
+    lastUpdatePayload = {
+      'id': id,
+      'type': type,
+      'amount': amount,
+      'category': category,
+      'note': note,
+      'occurred_at': occurredAt,
+    };
+    final current = entries.firstWhere((e) => e.id == id);
+    final updated = FinanceEntry(
+      id: id,
+      type: type,
+      amount: amount,
+      category: category,
+      note: note,
+      occurredAt: occurredAt != null ? DateTime.parse(occurredAt) : current.occurredAt,
+      sourceType: current.sourceType,
+      sourceId: current.sourceId,
+    );
+    entries = [for (final e in entries) e.id == id ? updated : e];
+    return updated;
   }
 
   @override

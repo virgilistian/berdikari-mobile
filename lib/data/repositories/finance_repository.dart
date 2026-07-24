@@ -116,6 +116,11 @@ class FinanceRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Local-first lookup for the edit screen — no network round trip, since
+  /// the entry is already in the cache the list screen rendered it from.
+  FinanceEntry? findById(String id) =>
+      _db.getFinanceEntries().where((e) => e.id == id).firstOrNull;
+
   Future<bool> _ensureBootstrapped() async {
     if (_bootstrapped) return true;
     _bootstrapped = true;
@@ -202,7 +207,14 @@ class FinanceRepository extends ChangeNotifier {
     return fetchAll();
   }
 
-  Future<FinanceEntry> createEntry({
+  /// Creates a new entry (`id == null`) or edits an existing manual one
+  /// (`id` set) — mirrors `CatalogRepository.saveProduct`'s create/update
+  /// unification. Editing a row that hasn't synced yet (still a `local-`
+  /// id, `create` job still pending) just rewrites that job's payload in
+  /// place — [AppDatabase.enqueue] already collapses same-entity jobs, so
+  /// it never turns into a `PUT` against a fake local id.
+  Future<FinanceEntry> saveEntry({
+    String? id,
     required String type,
     required int amount,
     required String category,
@@ -210,29 +222,36 @@ class FinanceRepository extends ChangeNotifier {
     DateTime? occurredAt,
   }) async {
     await _ensureBootstrapped();
-    final localId = 'local-${generateClientUuid()}';
+    final isCreate = id == null;
+    final current =
+        isCreate ? null : _db.getFinanceEntries().where((e) => e.id == id).firstOrNull;
+    final clientUuid = generateClientUuid();
+    final entityId = id ?? 'local-$clientUuid';
     final entry = FinanceEntry(
-      id: localId,
+      id: entityId,
       type: type,
       amount: amount,
       category: category,
       note: note,
       occurredAt: occurredAt ?? DateTime.now(),
       businessId: _auth.user?.businessId,
-      sourceType: 'manual',
+      sourceType: current?.sourceType ?? 'manual',
+      sourceId: current?.sourceId,
       pendingSync: true,
     );
-    _db.putLocalFinanceEntry(entry, SyncRowStatus.pendingCreate);
+    _db.putLocalFinanceEntry(
+        entry, isCreate ? SyncRowStatus.pendingCreate : SyncRowStatus.pendingUpdate);
     _db.enqueue(
       entityType: 'finance_entry',
-      entityId: localId,
-      operation: 'create',
+      entityId: entityId,
+      operation: isCreate ? 'create' : 'update',
       payload: {
         'type': type,
         'amount': amount,
         'category': category,
         'note': note,
         'occurred_at': occurredAt == null ? null : _isoDate(occurredAt),
+        if (isCreate) 'client_uuid': clientUuid,
       },
     );
     _applyLocalFilters();
@@ -281,6 +300,16 @@ class FinanceRepository extends ChangeNotifier {
           if (job.operation == 'delete') {
             await _finance.deleteEntry(job.entityId);
             _db.removeFinanceEntry(job.entityId);
+          } else if (job.operation == 'update') {
+            final saved = await _finance.updateEntry(
+              job.entityId,
+              type: job.payload['type'] as String,
+              amount: job.payload['amount'] as int,
+              category: job.payload['category'] as String,
+              note: job.payload['note'] as String?,
+              occurredAt: job.payload['occurred_at'] as String?,
+            );
+            _db.markFinanceEntrySynced(saved);
           } else {
             final saved = await _finance.createEntry(
               businessId: _auth.user?.businessId,
@@ -289,6 +318,7 @@ class FinanceRepository extends ChangeNotifier {
               category: job.payload['category'] as String,
               note: job.payload['note'] as String?,
               occurredAt: job.payload['occurred_at'] as String?,
+              clientUuid: job.payload['client_uuid'] as String?,
             );
             _db.markFinanceEntrySynced(saved, replacesLocalId: job.entityId);
           }

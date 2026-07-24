@@ -10,34 +10,58 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/rupiah_field.dart';
 import '../view_models/finance_form_view_model.dart';
 
-class FinanceNewView extends StatelessWidget {
-  const FinanceNewView({super.key});
+/// Create/edit cash entry form. `entry == null` creates a new one (mirrors
+/// berdikari-web `finance/new.vue`); `entry` set edits it in place (mirrors
+/// `finance/[id].vue`) — only manual entries reach this screen, the list
+/// never offers editing for auto (POS-generated) ones.
+class FinanceFormView extends StatelessWidget {
+  const FinanceFormView({super.key, this.entry});
+
+  final FinanceEntry? entry;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => FinanceFormViewModel(
         financeRepository: context.read<FinanceRepository>(),
+        existing: entry,
       ),
-      child: const _FinanceNewScreen(),
+      child: _FinanceFormScreen(entry: entry),
     );
   }
 }
 
-class _FinanceNewScreen extends StatefulWidget {
-  const _FinanceNewScreen();
+class _FinanceFormScreen extends StatefulWidget {
+  const _FinanceFormScreen({this.entry});
+
+  final FinanceEntry? entry;
 
   @override
-  State<_FinanceNewScreen> createState() => _FinanceNewScreenState();
+  State<_FinanceFormScreen> createState() => _FinanceFormScreenState();
 }
 
-class _FinanceNewScreenState extends State<_FinanceNewScreen> {
+class _FinanceFormScreenState extends State<_FinanceFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
   String _type = 'expense';
   String? _category;
   DateTime _occurredAt = DateTime.now();
+
+  bool get _isEditing => widget.entry != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final entry = widget.entry;
+    if (entry != null) {
+      _amountController.text = formatRupiahDigits(entry.amount);
+      _noteController.text = entry.note ?? '';
+      _type = entry.type;
+      _category = entry.category;
+      _occurredAt = entry.occurredAt;
+    }
+  }
 
   @override
   void dispose() {
@@ -78,7 +102,7 @@ class _FinanceNewScreenState extends State<_FinanceNewScreen> {
     );
     if (entry != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.financeSaved)),
+        SnackBar(content: Text(_isEditing ? l10n.financeUpdated : l10n.financeSaved)),
       );
       context.go('/finance');
     }
@@ -95,9 +119,9 @@ class _FinanceNewScreenState extends State<_FinanceNewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isExpense
-            ? l10n.financeNewExpenseTitle
-            : l10n.financeNewIncomeTitle),
+        title: Text(_isEditing
+            ? l10n.financeEditTitle
+            : (isExpense ? l10n.financeNewExpenseTitle : l10n.financeNewIncomeTitle)),
         leading: BackButton(onPressed: () => context.go('/finance')),
       ),
       body: SafeArea(
@@ -128,7 +152,7 @@ class _FinanceNewScreenState extends State<_FinanceNewScreen> {
               RupiahField(
                 controller: _amountController,
                 label: l10n.financeAmountLabel,
-                autofocus: true,
+                autofocus: !_isEditing,
                 validator: (value) => parseRupiahInput(value ?? '') <= 0
                     ? l10n.financeAmountRequired
                     : null,
@@ -184,7 +208,9 @@ class _FinanceNewScreenState extends State<_FinanceNewScreen> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(isExpense ? l10n.financeSaveExpense : l10n.financeSaveIncome),
+                    : Text(_isEditing
+                        ? l10n.financeSaveChanges
+                        : (isExpense ? l10n.financeSaveExpense : l10n.financeSaveIncome)),
               ),
             ],
           ),

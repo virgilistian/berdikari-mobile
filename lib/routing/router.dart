@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../data/repositories/auth_repository.dart';
+import '../data/repositories/finance_repository.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../ui/core/navigation/app_shell.dart';
 import '../ui/core/navigation/nav_registry.dart';
@@ -8,7 +10,7 @@ import '../ui/core/widgets/placeholder_view.dart';
 import '../ui/core/widgets/splash_view.dart';
 import '../ui/features/auth/views/login_view.dart';
 import '../ui/features/catalog/views/catalog_view.dart';
-import '../ui/features/finance/views/finance_new_view.dart';
+import '../ui/features/finance/views/finance_form_view.dart';
 import '../ui/features/finance/views/finance_view.dart';
 import '../ui/features/forbidden/views/forbidden_view.dart';
 import '../ui/features/home/views/home_view.dart';
@@ -42,6 +44,8 @@ abstract final class AppRoutes {
   static const inventoryStock = '/inventory/stock';
   static const finance = '/finance';
   static const financeNew = '/finance/new';
+  static const financeEditPattern = '/finance/:id';
+  static String financeEdit(String id) => '/finance/$id';
   static const reports = '/reports';
   static const settings = '/settings';
   static const settingsProfile = '/settings/profile';
@@ -80,12 +84,14 @@ String? _redirect(AuthRepository auth, GoRouterState state) {
     return AppRoutes.home;
   }
 
-  // `/inventory/history/:date` is a dynamic detail route (not in the static
-  // nav registry) — falls back to the same permission as the history list.
+  // `/inventory/history/:date` and `/finance/:id` are dynamic detail routes
+  // (not in the static nav registry) — fall back to a hand-picked permission.
   final required = routePermissions[path] ??
       (path.startsWith('/inventory/history/')
           ? const ['inventory.view']
-          : null);
+          : path.startsWith('/finance/') && path != AppRoutes.financeNew
+              ? const ['finance.update']
+              : null);
   if (required != null &&
       required.isNotEmpty &&
       !auth.hasAnyPermission(required)) {
@@ -172,7 +178,15 @@ GoRouter createRouter(AuthRepository auth) => GoRouter(
             ),
             GoRoute(
               path: AppRoutes.financeNew,
-              builder: (context, state) => const FinanceNewView(),
+              builder: (context, state) => const FinanceFormView(),
+            ),
+            GoRoute(
+              path: AppRoutes.financeEditPattern,
+              builder: (context, state) {
+                final id = state.pathParameters['id']!;
+                final entry = context.read<FinanceRepository>().findById(id);
+                return FinanceFormView(entry: entry);
+              },
             ),
             GoRoute(
               path: AppRoutes.reports,

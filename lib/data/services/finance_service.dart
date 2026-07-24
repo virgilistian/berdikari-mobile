@@ -49,6 +49,7 @@ class FinanceService {
     String? note,
     String? occurredAt,
     String? shiftId,
+    String? clientUuid,
   }) async {
     final response = await _api.post('/finance', body: {
       'business_id': ?businessId,
@@ -58,6 +59,27 @@ class FinanceService {
       if (note != null && note.isNotEmpty) 'note': note,
       if (occurredAt != null && occurredAt.isNotEmpty) 'occurred_at': occurredAt,
       if (shiftId != null) 'shift_id': shiftId,
+      if (clientUuid != null) 'client_uuid': clientUuid,
+    });
+    return FinanceEntry.fromJson(response['data'] as Map<String, dynamic>);
+  }
+
+  /// `PUT /finance/{id}` — only entries with `source_type=manual` can be
+  /// edited; the server rejects auto-generated (POS) entries.
+  Future<FinanceEntry> updateEntry(
+    String id, {
+    required String type,
+    required int amount,
+    required String category,
+    String? note,
+    String? occurredAt,
+  }) async {
+    final response = await _api.put('/finance/$id', body: {
+      'type': type,
+      'amount': amount,
+      'category': category,
+      if (note != null && note.isNotEmpty) 'note': note,
+      if (occurredAt != null && occurredAt.isNotEmpty) 'occurred_at': occurredAt,
     });
     return FinanceEntry.fromJson(response['data'] as Map<String, dynamic>);
   }

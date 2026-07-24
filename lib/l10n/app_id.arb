@@ -908,6 +908,22 @@
   "@financeSaved": {
     "description": "Notifikasi setelah transaksi keuangan tersimpan"
   },
+  "financeEditTitle": "Ubah Transaksi",
+  "@financeEditTitle": {
+    "description": "Judul halaman ubah transaksi keuangan"
+  },
+  "financeSaveChanges": "Simpan Perubahan",
+  "@financeSaveChanges": {
+    "description": "Tombol simpan perubahan transaksi keuangan"
+  },
+  "financeUpdated": "Perubahan berhasil disimpan.",
+  "@financeUpdated": {
+    "description": "Notifikasi setelah transaksi keuangan diperbarui"
+  },
+  "financeNotEditable": "Transaksi otomatis dari penjualan tidak dapat diubah.",
+  "@financeNotEditable": {
+    "description": "Pesan saat mencoba mengubah transaksi otomatis dari POS"
+  },
 
   "homeSalesTodayLabel": "Penjualan Hari Ini",
   "@homeSalesTodayLabel": {

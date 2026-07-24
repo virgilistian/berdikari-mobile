@@ -118,6 +118,7 @@ class _FinanceScreen extends StatelessWidget {
     final repo = context.watch<FinanceRepository>();
     final auth = context.watch<AuthRepository>();
     final canCreate = auth.hasPermission('finance.create');
+    final canUpdate = auth.hasPermission('finance.update');
     final canDelete = auth.hasPermission('finance.delete');
 
     return Scaffold(
@@ -325,7 +326,12 @@ class _FinanceScreen extends StatelessWidget {
                           await _confirmDelete(context, l10n, entry);
                           return false;
                         },
-                        child: _FinanceEntryTile(entry: entry),
+                        child: _FinanceEntryTile(
+                          entry: entry,
+                          onTap: canUpdate && !entry.isAuto
+                              ? () => context.push('/finance/${entry.id}')
+                              : null,
+                        ),
                       ),
                 ],
               ),
@@ -408,9 +414,10 @@ class _CategoryChip extends StatelessWidget {
 }
 
 class _FinanceEntryTile extends StatelessWidget {
-  const _FinanceEntryTile({required this.entry});
+  const _FinanceEntryTile({required this.entry, this.onTap});
 
   final FinanceEntry entry;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -420,53 +427,57 @@ class _FinanceEntryTile extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  entry.isIncome
+                      ? Icons.arrow_upward_outlined
+                      : Icons.arrow_downward_outlined,
+                  color: color,
+                  size: 18,
+                ),
               ),
-              child: Icon(
-                entry.isIncome
-                    ? Icons.arrow_upward_outlined
-                    : Icons.arrow_downward_outlined,
-                color: color,
-                size: 18,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(entry.category, style: theme.textTheme.titleSmall),
+                    if (entry.pendingSync)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: SyncPendingBadge(),
+                      )
+                    else if (entry.isAuto)
+                      Text(l10n.financeAutoBadge,
+                          style: theme.textTheme.bodySmall!
+                              .copyWith(color: theme.colorScheme.primary))
+                    else if (entry.note != null && entry.note!.isNotEmpty)
+                      Text(entry.note!,
+                          style: theme.textTheme.bodySmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(entry.category, style: theme.textTheme.titleSmall),
-                  if (entry.pendingSync)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 2),
-                      child: SyncPendingBadge(),
-                    )
-                  else if (entry.isAuto)
-                    Text(l10n.financeAutoBadge,
-                        style: theme.textTheme.bodySmall!
-                            .copyWith(color: theme.colorScheme.primary))
-                  else if (entry.note != null && entry.note!.isNotEmpty)
-                    Text(entry.note!,
-                        style: theme.textTheme.bodySmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
-                ],
+              Text(
+                '${entry.isIncome ? '+' : '-'}${formatRupiah(entry.amount)}',
+                style: theme.textTheme.titleSmall!.copyWith(color: color),
               ),
-            ),
-            Text(
-              '${entry.isIncome ? '+' : '-'}${formatRupiah(entry.amount)}',
-              style: theme.textTheme.titleSmall!.copyWith(color: color),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
