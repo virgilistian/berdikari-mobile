@@ -12,6 +12,7 @@ class Product {
     required this.costPrice,
     required this.isActive,
     required this.imageUrl,
+    this.pendingSync = false,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -40,6 +41,10 @@ class Product {
   final int costPrice;
   final bool isActive;
   final String? imageUrl;
+
+  /// True while a create/update for this product is still sitting in the
+  /// local sync outbox, not yet confirmed by the server.
+  final bool pendingSync;
 }
 
 class ProductCategory {

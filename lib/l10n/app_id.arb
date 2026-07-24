@@ -33,6 +33,30 @@
   "@save": {
     "description": "Tombol simpan"
   },
+  "filterClearAction": "Hapus",
+  "@filterClearAction": {
+    "description": "Tombol hapus pilihan pada lembar filter (reusable)"
+  },
+  "filterApplyAction": "Pasang filter",
+  "@filterApplyAction": {
+    "description": "Tombol terapkan filter pada lembar filter (reusable)"
+  },
+  "filterSearchHint": "Cari...",
+  "@filterSearchHint": {
+    "description": "Placeholder kotak pencarian pada lembar filter (reusable)"
+  },
+  "filterNoResults": "Tidak ada hasil yang cocok",
+  "@filterNoResults": {
+    "description": "Keadaan kosong saat pencarian filter tidak menemukan hasil atau daftar pilihan kosong"
+  },
+  "financeFilterTypeChip": "Jenis",
+  "@financeFilterTypeChip": {
+    "description": "Label chip filter jenis transaksi keuangan"
+  },
+  "financeFilterPeriodChip": "Periode",
+  "@financeFilterPeriodChip": {
+    "description": "Label chip filter periode keuangan"
+  },
   "loginTitle": "Masuk",
   "@loginTitle": {
     "description": "Judul halaman masuk"
@@ -783,6 +807,14 @@
   "@financePeriodMonth": {
     "description": "Filter periode keuangan: bulan ini"
   },
+  "financePeriodYear": "Tahunan",
+  "@financePeriodYear": {
+    "description": "Filter periode keuangan: tahunan"
+  },
+  "financePeriodCustom": "Kustom",
+  "@financePeriodCustom": {
+    "description": "Filter periode keuangan: rentang tanggal kustom"
+  },
   "financeIncomeLabel": "Pemasukan",
   "@financeIncomeLabel": {
     "description": "Kartu ringkasan total pemasukan"
@@ -839,6 +871,22 @@
   "financeCategoryRequired": "Pilih kategori terlebih dahulu.",
   "@financeCategoryRequired": {
     "description": "Validasi kategori transaksi keuangan"
+  },
+  "financeCategoryAll": "Semua",
+  "@financeCategoryAll": {
+    "description": "Filter kategori transaksi keuangan: semua"
+  },
+  "financeCustomFromLabel": "Dari",
+  "@financeCustomFromLabel": {
+    "description": "Label tanggal awal pada filter rentang kustom keuangan"
+  },
+  "financeCustomToLabel": "Sampai",
+  "@financeCustomToLabel": {
+    "description": "Label tanggal akhir pada filter rentang kustom keuangan"
+  },
+  "financeCustomPickDate": "Pilih tanggal",
+  "@financeCustomPickDate": {
+    "description": "Placeholder saat tanggal rentang kustom keuangan belum dipilih"
   },
   "financeNoteLabel": "Catatan",
   "@financeNoteLabel": {
@@ -1114,5 +1162,471 @@
   "reportExportCsv": "Unduh CSV",
   "@reportExportCsv": {
     "description": "Tombol ekspor laporan ke CSV"
+  },
+
+  "receiptPendingSync": "Tersimpan Offline",
+  "@receiptPendingSync": {
+    "description": "Judul struk saat transaksi masih menunggu sinkronisasi"
+  },
+  "receiptPendingSyncMessage": "Akan disinkronkan otomatis saat koneksi kembali",
+  "@receiptPendingSyncMessage": {
+    "description": "Pesan struk saat transaksi masih menunggu sinkronisasi"
+  },
+  "payLaterButton": "Bayar Nanti",
+  "@payLaterButton": {
+    "description": "Tombol selesaikan pesanan tanpa pembayaran"
+  },
+  "holdOrderButton": "Simpan",
+  "@holdOrderButton": {
+    "description": "Tombol simpan pesanan (tahan, belum dibayar/diproses)"
+  },
+  "cancelCartButton": "Batalkan Pesanan",
+  "@cancelCartButton": {
+    "description": "Tombol batalkan seluruh keranjang"
+  },
+  "cancelCartConfirm": "Yakin batalkan pesanan ini?",
+  "@cancelCartConfirm": {
+    "description": "Pertanyaan konfirmasi batalkan keranjang"
+  },
+  "cancelCartConfirmYes": "Ya, batalkan",
+  "@cancelCartConfirmYes": {
+    "description": "Konfirmasi ya batalkan keranjang"
+  },
+  "cancelCartConfirmNo": "Tidak",
+  "@cancelCartConfirmNo": {
+    "description": "Konfirmasi tidak batalkan keranjang"
+  },
+  "exactAmountButton": "Uang Pas",
+  "@exactAmountButton": {
+    "description": "Tombol isi uang diterima sesuai total tagihan"
+  },
+  "posSearchHint": "Cari menu...",
+  "@posSearchHint": {
+    "description": "Placeholder pencarian produk di POS"
+  },
+  "shiftReminderMessage": "Shift belum dibuka — transaksi tetap bisa diproses.",
+  "@shiftReminderMessage": {
+    "description": "Pesan pengingat shift belum dibuka (bukan penghalang transaksi)"
+  },
+  "posOffline": "Mode offline — transaksi tetap tersimpan di perangkat",
+  "@posOffline": {
+    "description": "Status POS: sedang offline"
+  },
+  "posOfflineWithQueue": "Mode offline — {count} transaksi menunggu sinkronisasi",
+  "@posOfflineWithQueue": {
+    "description": "Status POS: offline dengan transaksi tertunda",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "posSyncing": "Menyinkronkan {count} transaksi...",
+  "@posSyncing": {
+    "description": "Status POS: sedang menyinkronkan",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "posQueuedWaiting": "{count} transaksi offline menunggu sinkronisasi",
+  "@posQueuedWaiting": {
+    "description": "Status POS: ada transaksi menunggu sinkronisasi",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "posRejectedByServer": "{count} transaksi ditolak server",
+  "@posRejectedByServer": {
+    "description": "Status POS: ada transaksi ditolak server",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shiftHistoryTitle": "Riwayat Shift",
+  "@shiftHistoryTitle": {
+    "description": "Judul halaman riwayat shift"
+  },
+  "shiftHistoryEmpty": "Belum ada riwayat shift.",
+  "@shiftHistoryEmpty": {
+    "description": "Pesan riwayat shift kosong"
+  },
+  "shiftStatusOpen": "Aktif",
+  "@shiftStatusOpen": {
+    "description": "Status shift: aktif"
+  },
+  "shiftStatusClosed": "Selesai",
+  "@shiftStatusClosed": {
+    "description": "Status shift: selesai/ditutup"
+  },
+  "shiftDetailTitle": "Detail Shift",
+  "@shiftDetailTitle": {
+    "description": "Judul lembar detail shift"
+  },
+  "shiftCashierLabel": "Kasir",
+  "@shiftCashierLabel": {
+    "description": "Label nama kasir pada detail shift"
+  },
+  "shiftOpenedAtLabel": "Buka",
+  "@shiftOpenedAtLabel": {
+    "description": "Label waktu buka shift"
+  },
+  "shiftClosedAtLabel": "Tutup",
+  "@shiftClosedAtLabel": {
+    "description": "Label waktu tutup shift"
+  },
+  "shiftPaymentBreakdownTitle": "Rekapitulasi Pembayaran",
+  "@shiftPaymentBreakdownTitle": {
+    "description": "Judul rincian pembayaran per metode pada shift"
+  },
+  "cashDifferenceValue": "Selisih: {value}",
+  "@cashDifferenceValue": {
+    "description": "Nilai selisih kas langsung saat mengisi kas akhir",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "shiftCloseNotPermitted": "Anda tidak memiliki izin untuk menutup shift ini.",
+  "@shiftCloseNotPermitted": {
+    "description": "Pesan saat pengguna tidak memiliki izin pos.close"
+  },
+  "shiftQueuedTransactions": "{count} transaksi belum tersinkron",
+  "@shiftQueuedTransactions": {
+    "description": "Jumlah transaksi offline belum tersinkron pada layar shift",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shiftFailedTransactions": "{count} transaksi ditolak server",
+  "@shiftFailedTransactions": {
+    "description": "Jumlah transaksi ditolak server pada layar shift",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shiftDiscardFailed": "Hapus yang ditolak",
+  "@shiftDiscardFailed": {
+    "description": "Tombol hapus transaksi yang ditolak server"
+  },
+  "back": "Kembali",
+  "@back": {
+    "description": "Tombol kembali (langkah wizard)"
+  },
+  "shiftItemsSoldLabel": "Item Terjual",
+  "@shiftItemsSoldLabel": {
+    "description": "Label jumlah item terjual pada shift"
+  },
+  "shiftStockReconTitle": "Rekonsiliasi Stok",
+  "@shiftStockReconTitle": {
+    "description": "Judul langkah rekonsiliasi stok saat tutup shift"
+  },
+  "shiftStockReconMessage": "Periksa sisa stok menurut sistem. Sesuaikan jika jumlah fisik berbeda, dan isi alasan penyesuaian.",
+  "@shiftStockReconMessage": {
+    "description": "Instruksi langkah rekonsiliasi stok"
+  },
+  "shiftStockReconEmpty": "Belum ada data stok hari ini. Kamu bisa lanjut menutup shift tanpa rekonsiliasi stok.",
+  "@shiftStockReconEmpty": {
+    "description": "Pesan saat tidak ada data stok harian untuk direkonsiliasi"
+  },
+  "shiftStockReconSystemLine": "Awal {opening} · Terjual {sold} · Sistem {remaining}",
+  "@shiftStockReconSystemLine": {
+    "description": "Ringkasan stok sistem per baris produk pada rekonsiliasi",
+    "placeholders": {
+      "opening": {"type": "int"},
+      "sold": {"type": "int"},
+      "remaining": {"type": "int"}
+    }
+  },
+  "shiftStockPhysicalLabel": "Fisik",
+  "@shiftStockPhysicalLabel": {
+    "description": "Label jumlah fisik pada rekonsiliasi stok"
+  },
+  "shiftStockReasonLabel": "Alasan penyesuaian (wajib)",
+  "@shiftStockReasonLabel": {
+    "description": "Placeholder alasan penyesuaian stok"
+  },
+  "shiftStockSkip": "Lewati",
+  "@shiftStockSkip": {
+    "description": "Tombol lewati rekonsiliasi stok (tidak ada data)"
+  },
+  "shiftStockContinue": "Lanjut",
+  "@shiftStockContinue": {
+    "description": "Tombol lanjut ke langkah tutup kas"
+  },
+  "shiftCashSummaryTitle": "Ringkasan Kas",
+  "@shiftCashSummaryTitle": {
+    "description": "Judul ringkasan kas pada tutup shift"
+  },
+  "shiftCashSalesLine": "Penjualan Tunai",
+  "@shiftCashSalesLine": {
+    "description": "Baris penjualan tunai pada ringkasan kas"
+  },
+  "shiftExpensesLine": "Pengeluaran Operasional",
+  "@shiftExpensesLine": {
+    "description": "Baris pengeluaran operasional pada ringkasan kas"
+  },
+  "shiftInfoSection": "Informasi Shift",
+  "@shiftInfoSection": {
+    "description": "Judul bagian informasi shift pada ringkasan"
+  },
+  "shiftSalesSummaryTitle": "Ringkasan Penjualan",
+  "@shiftSalesSummaryTitle": {
+    "description": "Judul bagian ringkasan penjualan pada ringkasan shift"
+  },
+  "shiftTotalCashLabel": "Total Tunai",
+  "@shiftTotalCashLabel": {
+    "description": "Label total penjualan tunai"
+  },
+  "shiftTotalNonCashLabel": "Total Non-Tunai",
+  "@shiftTotalNonCashLabel": {
+    "description": "Label total penjualan non-tunai"
+  },
+  "shiftDurationLabel": "Durasi Shift",
+  "@shiftDurationLabel": {
+    "description": "Label durasi shift pada ringkasan"
+  },
+  "shiftExpensesSection": "Pengeluaran Operasional",
+  "@shiftExpensesSection": {
+    "description": "Judul bagian daftar pengeluaran operasional pada ringkasan shift"
+  },
+  "shiftExpensesEmpty": "Belum ada pengeluaran dicatat",
+  "@shiftExpensesEmpty": {
+    "description": "Pesan saat belum ada pengeluaran shift"
+  },
+  "shiftNetIncomeLabel": "Pendapatan Bersih",
+  "@shiftNetIncomeLabel": {
+    "description": "Label pendapatan bersih pada ringkasan shift"
+  },
+  "shiftStockSection": "Stok",
+  "@shiftStockSection": {
+    "description": "Judul bagian rekap stok pada ringkasan shift"
+  },
+  "shiftStockOpeningLabel": "Stok Awal",
+  "@shiftStockOpeningLabel": {
+    "description": "Label total stok awal pada rekap shift"
+  },
+  "shiftStockSoldLabel": "Terjual",
+  "@shiftStockSoldLabel": {
+    "description": "Label total stok terjual pada rekap shift"
+  },
+  "shiftStockRemainingLabel": "Sisa Stok",
+  "@shiftStockRemainingLabel": {
+    "description": "Label total sisa stok pada rekap shift"
+  },
+  "shiftStockAdjustmentsTitle": "Penyesuaian Stok",
+  "@shiftStockAdjustmentsTitle": {
+    "description": "Judul daftar penyesuaian stok pada rekap shift"
+  },
+  "ordersBalanceDueLabel": "Sisa (Piutang)",
+  "@ordersBalanceDueLabel": {
+    "description": "Label sisa tagihan pesanan"
+  },
+  "ordersRequiresConnection": "Perlu koneksi internet untuk aksi ini.",
+  "@ordersRequiresConnection": {
+    "description": "Pesan saat aksi pesanan memerlukan koneksi internet"
+  },
+  "ordersCompleteAction": "Selesaikan & Bayar",
+  "@ordersCompleteAction": {
+    "description": "Tombol selesaikan dan bayar pesanan tertunda"
+  },
+  "ordersPayAction": "Terima Pembayaran",
+  "@ordersPayAction": {
+    "description": "Tombol terima pembayaran pesanan belum lunas"
+  },
+  "ordersCancelAction": "Batalkan Pesanan",
+  "@ordersCancelAction": {
+    "description": "Tombol batalkan pesanan tertunda"
+  },
+  "ordersCancelConfirmTitle": "Batalkan Pesanan Ini?",
+  "@ordersCancelConfirmTitle": {
+    "description": "Judul konfirmasi batalkan pesanan"
+  },
+  "ordersCancelConfirmMessage": "Pesanan yang dibatalkan tidak bisa dikembalikan lagi.",
+  "@ordersCancelConfirmMessage": {
+    "description": "Isi konfirmasi batalkan pesanan"
+  },
+  "ordersRefundAction": "Refund Pesanan",
+  "@ordersRefundAction": {
+    "description": "Tombol refund pesanan selesai"
+  },
+  "ordersRefundConfirmTitle": "Refund Pesanan Ini?",
+  "@ordersRefundConfirmTitle": {
+    "description": "Judul konfirmasi refund pesanan"
+  },
+  "ordersRefundConfirmMessage": "Uang pembayaran akan dianggap dikembalikan ke pelanggan dan pesanan ditandai refund.",
+  "@ordersRefundConfirmMessage": {
+    "description": "Isi konfirmasi refund pesanan"
+  },
+  "financeByCategoryTitle": "Rincian per Kategori",
+  "@financeByCategoryTitle": {
+    "description": "Judul rincian transaksi keuangan per kategori"
+  },
+  "financeAutoBadge": "Otomatis · POS",
+  "@financeAutoBadge": {
+    "description": "Badge transaksi keuangan yang dibuat otomatis dari penjualan"
+  },
+  "financeDateLabel": "Tanggal transaksi",
+  "@financeDateLabel": {
+    "description": "Label tanggal transaksi pada formulir keuangan baru"
+  },
+  "dailyStockHistoryTitle": "Riwayat Stok Harian",
+  "@dailyStockHistoryTitle": {
+    "description": "Judul halaman riwayat stok harian"
+  },
+  "dailyStockHistoryEmptyTitle": "Belum Ada Riwayat Stok",
+  "@dailyStockHistoryEmptyTitle": {
+    "description": "Judul kosong pada riwayat stok harian"
+  },
+  "dailyStockHistoryEmptyMessage": "Catat stok awal hari ini untuk mulai membangun riwayat stok harian",
+  "@dailyStockHistoryEmptyMessage": {
+    "description": "Pesan kosong pada riwayat stok harian"
+  },
+  "dailyStockAddButton": "Tambah Stok Harian",
+  "@dailyStockAddButton": {
+    "description": "Tombol tambah stok harian"
+  },
+  "dailyStockStatusDraft": "Draf",
+  "@dailyStockStatusDraft": {
+    "description": "Status stok harian: draf"
+  },
+  "dailyStockStatusOpen": "Berjalan",
+  "@dailyStockStatusOpen": {
+    "description": "Status stok harian: berjalan"
+  },
+  "dailyStockStatusClosed": "Selesai",
+  "@dailyStockStatusClosed": {
+    "description": "Status stok harian: selesai"
+  },
+  "dailyStockDetailTitle": "Detail Stok Harian",
+  "@dailyStockDetailTitle": {
+    "description": "Judul halaman detail stok harian"
+  },
+  "dailyStockDraftBanner": "Ini masih draf — belum berlaku sampai tanggal tiba.",
+  "@dailyStockDraftBanner": {
+    "description": "Banner draf stok harian belum berlaku"
+  },
+  "dailyStockNoDataForDate": "Tidak ada data stok untuk tanggal ini",
+  "@dailyStockNoDataForDate": {
+    "description": "Pesan tidak ada data stok untuk tanggal yang dipilih"
+  },
+  "dailyStockAutoCloseNote": "Stok akan direkonsiliasi dan ditutup otomatis saat kasir menutup shift.",
+  "@dailyStockAutoCloseNote": {
+    "description": "Catatan bahwa stok ditutup otomatis lewat tutup shift"
+  },
+  "dailyStockEditAction": "Edit",
+  "@dailyStockEditAction": {
+    "description": "Tombol edit draf stok harian"
+  },
+  "dailyStockDeleteAction": "Hapus",
+  "@dailyStockDeleteAction": {
+    "description": "Tombol hapus draf stok harian"
+  },
+  "dailyStockDeleteDraftConfirmTitle": "Hapus Draf Stok Ini?",
+  "@dailyStockDeleteDraftConfirmTitle": {
+    "description": "Judul konfirmasi hapus draf stok harian"
+  },
+  "dailyStockDeleteDraftConfirmMessage": "Draf stok untuk tanggal ini akan dihapus dan tidak bisa dikembalikan.",
+  "@dailyStockDeleteDraftConfirmMessage": {
+    "description": "Isi konfirmasi hapus draf stok harian"
+  },
+  "dailyStockDeleted": "Draf stok harian sudah dihapus.",
+  "@dailyStockDeleted": {
+    "description": "Pesan sukses hapus draf stok harian"
+  },
+  "openStockDateLabel": "Tanggal stok",
+  "@openStockDateLabel": {
+    "description": "Label pemilih tanggal pada buka stok"
+  },
+  "openStockDateHint": "Ingin menyiapkan stok lebih awal? Pilih tanggal yang diinginkan di sini.",
+  "@openStockDateHint": {
+    "description": "Petunjuk pemilih tanggal buka stok"
+  },
+  "posExpenseTooltip": "Catat pengeluaran",
+  "@posExpenseTooltip": {
+    "description": "Tooltip tombol catat pengeluaran shift di layar kasir"
+  },
+  "posExpenseDrawerTitle": "Catat Pengeluaran",
+  "@posExpenseDrawerTitle": {
+    "description": "Judul drawer catat pengeluaran shift"
+  },
+  "posExpenseAmountLabel": "Jumlah pengeluaran",
+  "@posExpenseAmountLabel": {
+    "description": "Label jumlah pada catat pengeluaran shift"
+  },
+  "posExpenseCategoryLabel": "Kategori",
+  "@posExpenseCategoryLabel": {
+    "description": "Label kategori pada catat pengeluaran shift"
+  },
+  "posExpenseNoteLabel": "Catatan (opsional)",
+  "@posExpenseNoteLabel": {
+    "description": "Label catatan pada catat pengeluaran shift"
+  },
+  "posExpenseRecordedTitle": "Sudah dicatat shift ini",
+  "@posExpenseRecordedTitle": {
+    "description": "Judul daftar pengeluaran yang sudah dicatat shift berjalan"
+  },
+  "posExpenseSaved": "Pengeluaran sudah ditambahkan ke shift ini",
+  "@posExpenseSaved": {
+    "description": "Pesan sukses catat pengeluaran shift"
+  },
+  "posExpenseRequiresShift": "Buka shift terlebih dahulu untuk mencatat pengeluaran.",
+  "@posExpenseRequiresShift": {
+    "description": "Pesan saat mencatat pengeluaran tanpa shift aktif"
+  },
+  "statusUnpaid": "Belum Lunas",
+  "@statusUnpaid": {
+    "description": "Filter/status pesanan selesai namun belum lunas"
+  },
+  "syncStatusSyncing": "Menyinkronkan…",
+  "@syncStatusSyncing": {
+    "description": "Indikator sinkronisasi: sedang berjalan"
+  },
+  "syncStatusSynced": "Tersinkron",
+  "@syncStatusSynced": {
+    "description": "Indikator sinkronisasi: semua data sudah tersinkron"
+  },
+  "syncStatusPending": "Menunggu ({count})",
+  "@syncStatusPending": {
+    "description": "Indikator sinkronisasi: ada perubahan menunggu dikirim",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncStatusFailed": "Gagal — ketuk untuk coba lagi",
+  "@syncStatusFailed": {
+    "description": "Indikator sinkronisasi: ada perubahan gagal dikirim"
+  },
+  "syncStatusOffline": "Offline — perubahan tersimpan di perangkat",
+  "@syncStatusOffline": {
+    "description": "Indikator sinkronisasi: perangkat sedang offline"
+  },
+  "syncPendingBadge": "Menunggu sinkronisasi",
+  "@syncPendingBadge": {
+    "description": "Label kecil pada baris data yang belum tersinkron ke server"
+  },
+  "syncFailedSheetTitle": "Perubahan gagal disinkronkan",
+  "@syncFailedSheetTitle": {
+    "description": "Judul lembar retry/discard untuk item yang gagal sinkron"
+  },
+  "syncRetry": "Coba lagi",
+  "@syncRetry": {
+    "description": "Tombol coba sinkronkan ulang"
+  },
+  "syncDiscard": "Batalkan perubahan",
+  "@syncDiscard": {
+    "description": "Tombol membatalkan perubahan yang gagal sinkron"
   }
 }

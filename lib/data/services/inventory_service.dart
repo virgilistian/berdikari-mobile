@@ -70,6 +70,91 @@ class InventoryService {
         .toList();
   }
 
+  /// `GET /inventory/daily-stock/history` — per-date summary, newest first.
+  Future<List<DailyStockHistoryRow>> fetchHistory({String? businessId}) async {
+    final response = await _api.get(
+      '/inventory/daily-stock/history',
+      query: {'business_id': ?businessId},
+    );
+    return (response['data'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(DailyStockHistoryRow.fromJson)
+        .toList();
+  }
+
+  /// `GET /inventory/daily-stock/{date}` — full detail for any date (today,
+  /// a past closed day, or a future-dated draft).
+  Future<List<DailyStockItem>> fetchDayDetail({
+    String? businessId,
+    required String date,
+  }) async {
+    final response = await _api.get(
+      '/inventory/daily-stock/$date',
+      query: {'business_id': ?businessId},
+    );
+    return (response['data'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(DailyStockItem.fromJson)
+        .toList();
+  }
+
+  /// `POST /inventory/daily-stock/open` for an arbitrary (possibly future)
+  /// date — used for both "buka hari ini" and future-date prep.
+  Future<List<DailyStockItem>> openDayFor({
+    String? businessId,
+    required String date,
+    required List<({String productId, String productName, int openingQty})>
+        items,
+  }) async {
+    final response = await _api.post('/inventory/daily-stock/open', body: {
+      'business_id': ?businessId,
+      'date': date,
+      'items': [
+        for (final item in items)
+          {
+            'product_id': item.productId,
+            'product_name': item.productName,
+            'opening_qty': item.openingQty,
+          },
+      ],
+    });
+    return (response['data'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(DailyStockItem.fromJson)
+        .toList();
+  }
+
+  /// `POST /inventory/daily-stock/adjust` — manual physical-count correction
+  /// against an *open* daily-stock record (distinct from [adjust], which
+  /// targets the realtime Stock & Valuation ledger).
+  Future<DailyStockItem> adjustDailyStock({
+    String? businessId,
+    required String date,
+    required String productId,
+    required int adjustmentQty,
+    String? adjustmentNote,
+  }) async {
+    final response = await _api.post('/inventory/daily-stock/adjust', body: {
+      'business_id': ?businessId,
+      'date': date,
+      'product_id': productId,
+      'adjustment_qty': adjustmentQty,
+      if (adjustmentNote != null && adjustmentNote.isNotEmpty)
+        'adjustment_note': adjustmentNote,
+    });
+    return DailyStockItem.fromJson(response['data'] as Map<String, dynamic>);
+  }
+
+  /// `DELETE /inventory/daily-stock/{date}` — deletes a still-draft day.
+  Future<void> deleteDailyStockDay({
+    String? businessId,
+    required String date,
+  }) =>
+      _api.delete(
+        '/inventory/daily-stock/$date',
+        query: {'business_id': ?businessId},
+      );
+
   // ── Stock & valuation ────────────────────────────────────────────────
 
   Future<(List<StockRow>, StockSummary)> fetchStock({String? businessId}) async {

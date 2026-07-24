@@ -23,6 +23,7 @@ class FinanceFormViewModel extends ChangeNotifier {
     required int amount,
     required String category,
     String? note,
+    DateTime? occurredAt,
   }) async {
     _saving = true;
     _errorMessage = null;
@@ -33,6 +34,7 @@ class FinanceFormViewModel extends ChangeNotifier {
         amount: amount,
         category: category,
         note: note,
+        occurredAt: occurredAt,
       );
     } on ApiException catch (e) {
       _errorMessage = e.message;

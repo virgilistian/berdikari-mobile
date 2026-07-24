@@ -1,4 +1,5 @@
 import 'package:berdikari_mobile/app.dart';
+import 'package:berdikari_mobile/data/repositories/offline_queue_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -7,31 +8,43 @@ import 'support/fakes.dart';
 /// End-to-end POS flow: open shift -> add products -> checkout -> receipt.
 /// Mirrors the Project DNA §5a/§5b business workflows.
 void main() {
-  testWidgets('no active shift shows the open-shift prompt on /pos',
+  testWidgets(
+      'no active shift still shows the product grid, with a dismissible reminder',
       (tester) async {
     final auth = fakeAuthRepository(user: sampleUser(), token: 't');
+    final sales = FakeSalesService();
     await tester.pumpWidget(BerdikariApp(
       authRepository: auth,
       catalogService: FakeCatalogService(),
-      salesService: FakeSalesService(),
+      salesService: sales,
+      offlineQueueRepository: OfflineQueueRepository(salesService: sales, store: FakePendingOrderStore()),
     ));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Kasir'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Belum ada shift aktif'), findsOneWidget);
-    expect(find.text('Buka Shift'), findsOneWidget);
+    // Shift is a dismissible reminder, not a blocker (Project decision —
+    // matches berdikari-web `pos/index.vue`).
+    expect(find.textContaining('Shift belum dibuka'), findsOneWidget);
+    expect(find.text('Es Teh'), findsOneWidget);
+
+    // Product can still be added to cart without an open shift.
+    await tester.tap(find.text('Es Teh'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bayar'), findsWidgets);
   });
 
   testWidgets(
       'open shift, add products to cart, checkout, and see the receipt',
       (tester) async {
     final auth = fakeAuthRepository(user: sampleUser(), token: 't');
+    final sales = FakeSalesService();
     await tester.pumpWidget(BerdikariApp(
       authRepository: auth,
       catalogService: FakeCatalogService(),
-      salesService: FakeSalesService(),
+      salesService: sales,
+      offlineQueueRepository: OfflineQueueRepository(salesService: sales, store: FakePendingOrderStore()),
     ));
     await tester.pumpAndSettle();
 
@@ -70,8 +83,12 @@ void main() {
     await tester.tap(find.widgetWithText(ElevatedButton, 'Proses Pembayaran'));
     await tester.pumpAndSettle();
 
-    // Receipt.
-    expect(find.text('Transaksi Berhasil'), findsOneWidget);
+    // Receipt — checkout is offline-first (every sale is queued locally
+    // first, then synced in the background), so the receipt always shows
+    // the pending-sync state at the moment it's returned, even though the
+    // FakeSalesService will have already accepted it by the time the
+    // background drain() runs.
+    expect(find.text('Tersimpan Offline'), findsOneWidget);
     await tester.tap(find.text('Transaksi Baru'));
     await tester.pumpAndSettle();
 
@@ -85,10 +102,12 @@ void main() {
       user: sampleUser(permissions: const [], roles: const ['viewer']),
       token: 't',
     );
+    final sales = FakeSalesService();
     await tester.pumpWidget(BerdikariApp(
       authRepository: auth,
       catalogService: FakeCatalogService(),
-      salesService: FakeSalesService(),
+      salesService: sales,
+      offlineQueueRepository: OfflineQueueRepository(salesService: sales, store: FakePendingOrderStore()),
     ));
     await tester.pumpAndSettle();
 

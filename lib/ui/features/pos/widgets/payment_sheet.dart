@@ -10,10 +10,22 @@ import '../../../core/widgets/rupiah_field.dart';
 /// Payment step: method + amount tendered. Pops with the completed order.
 /// Non-cash methods (QRIS/transfer) always pay the exact total.
 class PaymentSheet extends StatefulWidget {
-  const PaymentSheet({super.key});
+  const PaymentSheet({super.key, this.initialCustomerName});
+
+  /// Prefilled from the cart sheet's customer-name field, if the cashier
+  /// already typed one before tapping "Bayar".
+  final String? initialCustomerName;
 
   @override
   State<PaymentSheet> createState() => _PaymentSheetState();
+}
+
+/// Quick cash presets (mirrors berdikari-web `pos/index.vue`'s
+/// `quickAmounts`): the four smallest standard notes at or above the
+/// total, so the cashier never sees an amount that can't cover the bill.
+List<int> _quickAmounts(int total) {
+  const bases = [5000, 10000, 20000, 50000, 100000];
+  return bases.where((b) => b >= total).take(4).toList();
 }
 
 class _PaymentSheetState extends State<PaymentSheet> {
@@ -28,6 +40,9 @@ class _PaymentSheetState extends State<PaymentSheet> {
     super.initState();
     final total = context.read<CartRepository>().totalAmount;
     _cashController.text = formatRupiahDigits(total);
+    if (widget.initialCustomerName != null && widget.initialCustomerName!.isNotEmpty) {
+      _customerController.text = widget.initialCustomerName!;
+    }
   }
 
   @override
@@ -112,6 +127,24 @@ class _PaymentSheetState extends State<PaymentSheet> {
               RupiahField(
                 controller: _cashController,
                 label: l10n.cashReceivedLabel,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final amount in _quickAmounts(total))
+                    ActionChip(
+                      label: Text(formatRupiah(amount)),
+                      onPressed: () => setState(
+                          () => _cashController.text = formatRupiahDigits(amount)),
+                    ),
+                  ActionChip(
+                    label: Text(l10n.exactAmountButton),
+                    onPressed: () => setState(
+                        () => _cashController.text = formatRupiahDigits(total)),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
             ],

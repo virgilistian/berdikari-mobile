@@ -59,6 +59,25 @@ class DailyStockRepository extends ChangeNotifier {
     }
   }
 
+  /// Opens (or re-preps) an arbitrary date — used for future-dated prep from
+  /// the "Buka Stok" screen. Only refreshes [stocks] when [date] is today,
+  /// mirroring berdikari-web `dailyStock.ts`'s `openDay`.
+  Future<List<DailyStockItem>> openDayFor(
+    String date,
+    List<({String productId, String productName, int openingQty})> items,
+  ) async {
+    final result = await _inventory.openDayFor(
+      businessId: _auth.user?.businessId,
+      date: date,
+      items: items,
+    );
+    if (date == today) {
+      _stocks = result;
+      notifyListeners();
+    }
+    return result;
+  }
+
   Future<void> closeDay() async {
     _loading = true;
     try {
@@ -68,5 +87,80 @@ class DailyStockRepository extends ChangeNotifier {
       _loading = false;
       notifyListeners();
     }
+  }
+
+  static String get today => DateTime.now().toIso8601String().split('T').first;
+
+  List<DailyStockHistoryRow> _history = [];
+  bool _historyLoading = false;
+  List<DailyStockItem> _dayDetail = [];
+  bool _dayDetailLoading = false;
+
+  List<DailyStockHistoryRow> get history => _history;
+  bool get historyLoading => _historyLoading;
+  List<DailyStockItem> get dayDetail => _dayDetail;
+  bool get dayDetailLoading => _dayDetailLoading;
+
+  Future<void> fetchHistory() async {
+    _historyLoading = true;
+    notifyListeners();
+    try {
+      _history = await _inventory.fetchHistory(businessId: _auth.user?.businessId);
+    } catch (_) {
+      _history = [];
+    } finally {
+      _historyLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchDayDetail(String date) async {
+    _dayDetailLoading = true;
+    notifyListeners();
+    try {
+      _dayDetail = await _inventory.fetchDayDetail(
+        businessId: _auth.user?.businessId,
+        date: date,
+      );
+    } catch (_) {
+      _dayDetail = [];
+    } finally {
+      _dayDetailLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Physical-count correction against today's open stock (e.g. during
+  /// shift-close reconciliation). Updates [stocks] in place.
+  Future<void> adjustStock(
+    String productId,
+    int adjustmentQty, {
+    String? note,
+  }) async {
+    final updated = await _inventory.adjustDailyStock(
+      businessId: _auth.user?.businessId,
+      date: today,
+      productId: productId,
+      adjustmentQty: adjustmentQty,
+      adjustmentNote: note,
+    );
+    final idx = _stocks.indexWhere((s) => s.productId == productId);
+    if (idx != -1) {
+      _stocks = [
+        for (var i = 0; i < _stocks.length; i++)
+          if (i == idx) updated else _stocks[i],
+      ];
+    }
+    notifyListeners();
+  }
+
+  /// Deletes a still-draft (future-dated) day.
+  Future<void> deleteDay(String date) async {
+    await _inventory.deleteDailyStockDay(
+      businessId: _auth.user?.businessId,
+      date: date,
+    );
+    _history = _history.where((h) => h.date != date).toList();
+    notifyListeners();
   }
 }

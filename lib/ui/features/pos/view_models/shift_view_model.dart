@@ -53,6 +53,11 @@ class ShiftViewModel extends ChangeNotifier {
     } on ApiException catch (e) {
       _errorMessage = e.message;
       return false;
+    } on ShiftCloseBlockedException catch (e) {
+      _errorMessage =
+          'Masih ada ${e.queuedCount} transaksi belum tersinkron. '
+          'Sambungkan ke internet untuk menutup shift.';
+      return false;
     } catch (_) {
       _errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
       return false;

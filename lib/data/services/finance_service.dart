@@ -47,6 +47,8 @@ class FinanceService {
     required int amount,
     required String category,
     String? note,
+    String? occurredAt,
+    String? shiftId,
   }) async {
     final response = await _api.post('/finance', body: {
       'business_id': ?businessId,
@@ -54,8 +56,23 @@ class FinanceService {
       'amount': amount,
       'category': category,
       if (note != null && note.isNotEmpty) 'note': note,
+      if (occurredAt != null && occurredAt.isNotEmpty) 'occurred_at': occurredAt,
+      if (shiftId != null) 'shift_id': shiftId,
     });
     return FinanceEntry.fromJson(response['data'] as Map<String, dynamic>);
+  }
+
+  /// Operational expenses recorded against a specific cashier shift
+  /// (`source_type=shift_expense`) — does not touch the global entries list.
+  Future<List<FinanceEntry>> fetchShiftExpenses(String shiftId) async {
+    final response = await _api.get('/finance', query: {
+      'source_type': 'shift_expense',
+      'source_id': shiftId,
+    });
+    return (response['data'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(FinanceEntry.fromJson)
+        .toList();
   }
 
   Future<void> deleteEntry(String id) => _api.delete('/finance/$id');

@@ -1,13 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'config/remote_config_service.dart';
+import 'data/local/app_database.dart';
+import 'data/local/sync/sync_manager.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/cart_repository.dart';
 import 'data/repositories/catalog_repository.dart';
 import 'data/repositories/daily_stock_repository.dart';
 import 'data/repositories/finance_repository.dart';
+import 'data/repositories/offline_queue_repository.dart';
 import 'data/repositories/orders_repository.dart';
 import 'data/repositories/shift_repository.dart';
 import 'data/repositories/stock_repository.dart';
@@ -30,6 +36,8 @@ class BerdikariApp extends StatefulWidget {
     this.salesService,
     this.inventoryService,
     this.financeService,
+    this.offlineQueueRepository,
+    this.appDatabase,
   });
 
   /// Test seams: inject pre-configured fakes. Production leaves them null.
@@ -39,6 +47,17 @@ class BerdikariApp extends StatefulWidget {
   final InventoryService? inventoryService;
   final FinanceService? financeService;
 
+  /// Test seam: inject a repository that skips [OfflineQueueRepository.init]
+  /// (real `Connectivity`/`SharedPreferences` platform channels aren't
+  /// available under `flutter test`). Production leaves this null.
+  final OfflineQueueRepository? offlineQueueRepository;
+
+  /// Test seam: inject a pre-built local store. Production leaves this
+  /// null — [AppDatabase] already degrades to an in-memory-only store when
+  /// no platform channel is available (e.g. under `flutter test`), so this
+  /// is only needed when a test wants to pre-seed local data.
+  final AppDatabase? appDatabase;
+
   @override
   State<BerdikariApp> createState() => _BerdikariAppState();
 }
@@ -46,8 +65,11 @@ class BerdikariApp extends StatefulWidget {
 class _BerdikariAppState extends State<BerdikariApp> {
   late final TokenStorage _tokenStorage;
   late final ApiClient _apiClient;
+  late final AppDatabase _appDatabase;
   late final AuthRepository _authRepository;
   late final CatalogRepository _catalogRepository;
+  late final OfflineQueueRepository _offlineQueueRepository;
+  late final SyncManager _syncManager;
   late final CartRepository _cartRepository;
   late final ShiftRepository _shiftRepository;
   late final OrdersRepository _ordersRepository;
@@ -64,6 +86,17 @@ class _BerdikariAppState extends State<BerdikariApp> {
     super.initState();
     _tokenStorage = TokenStorage();
     _apiClient = ApiClient(tokenProvider: _tokenStorage.read);
+    _appDatabase = widget.appDatabase ?? AppDatabase();
+    // Fire-and-forget: the store is immediately usable in-memory; this just
+    // upgrades it to durable on-disk storage once (if) it succeeds.
+    unawaited(_appDatabase.open());
+    // Fire-and-forget: never delay startup/login on a Remote Config round
+    // trip. Applies only if/when a non-empty override arrives.
+    RemoteConfigService()
+        .fetchApiBaseUrlOverride()
+        .then((override) => override != null
+            ? _apiClient.applyBaseUrlOverride(override)
+            : null);
 
     if (widget.authRepository != null) {
       _authRepository = widget.authRepository!;
@@ -85,12 +118,24 @@ class _BerdikariAppState extends State<BerdikariApp> {
     _financeService =
         widget.financeService ?? FinanceService(apiClient: _apiClient);
 
-    _catalogRepository = CatalogRepository(catalogService: catalogService);
+    _catalogRepository = CatalogRepository(
+      catalogService: catalogService,
+      database: _appDatabase,
+    );
+    if (widget.offlineQueueRepository != null) {
+      _offlineQueueRepository = widget.offlineQueueRepository!;
+    } else {
+      _offlineQueueRepository =
+          OfflineQueueRepository(salesService: _salesService)..init();
+    }
     _cartRepository = CartRepository(
-      salesService: _salesService,
+      offlineQueue: _offlineQueueRepository,
       authRepository: _authRepository,
     );
-    _shiftRepository = ShiftRepository(salesService: _salesService);
+    _shiftRepository = ShiftRepository(
+      salesService: _salesService,
+      offlineQueue: _offlineQueueRepository,
+    );
     _ordersRepository = OrdersRepository(
       salesService: _salesService,
       authRepository: _authRepository,
@@ -106,7 +151,13 @@ class _BerdikariAppState extends State<BerdikariApp> {
     _financeRepository = FinanceRepository(
       financeService: _financeService,
       authRepository: _authRepository,
+      database: _appDatabase,
     );
+    _syncManager = SyncManager(
+      database: _appDatabase,
+      catalogRepository: _catalogRepository,
+      financeRepository: _financeRepository,
+    )..init();
 
     _router = createRouter(_authRepository);
     _authRepository.restoreSession();
@@ -124,8 +175,13 @@ class _BerdikariAppState extends State<BerdikariApp> {
       providers: [
         Provider<TokenStorage>.value(value: _tokenStorage),
         Provider<ApiClient>.value(value: _apiClient),
+        Provider<AppDatabase>.value(value: _appDatabase),
         ChangeNotifierProvider<AuthRepository>.value(value: _authRepository),
-        Provider<CatalogRepository>.value(value: _catalogRepository),
+        ChangeNotifierProvider<CatalogRepository>.value(
+            value: _catalogRepository),
+        ChangeNotifierProvider<OfflineQueueRepository>.value(
+            value: _offlineQueueRepository),
+        ChangeNotifierProvider<SyncManager>.value(value: _syncManager),
         ChangeNotifierProvider<CartRepository>.value(value: _cartRepository),
         ChangeNotifierProvider<ShiftRepository>.value(value: _shiftRepository),
         Provider<OrdersRepository>.value(value: _ordersRepository),

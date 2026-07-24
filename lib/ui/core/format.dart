@@ -11,6 +11,12 @@ String formatRupiah(int amount) {
 /// "15.000" without the currency prefix, for input fields.
 String formatRupiahDigits(int amount) => _rupiah.format(amount);
 
+/// "+Rp15.000" / "-Rp15.000" — always shows a sign, for diff/delta values.
+String formatSignedRupiah(int amount) {
+  final prefix = amount > 0 ? '+' : '';
+  return '$prefix${formatRupiah(amount)}';
+}
+
 const _indonesianWeekdays = [
   'Senin',
   'Selasa',
@@ -43,4 +49,26 @@ String formatIndonesianDate(DateTime date) {
   final weekday = _indonesianWeekdays[date.weekday - 1];
   final month = _indonesianMonths[date.month - 1];
   return '$weekday, ${date.day} $month ${date.year}';
+}
+
+const _indonesianMonthsShort = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'Mei',
+  'Jun',
+  'Jul',
+  'Agu',
+  'Sep',
+  'Okt',
+  'Nov',
+  'Des',
+];
+
+/// "13 Jul 2026" — compact form for date-range filters. Same manual
+/// approach as [formatIndonesianDate], no locale init needed.
+String formatShortDate(DateTime date) {
+  final month = _indonesianMonthsShort[date.month - 1];
+  return '${date.day} $month ${date.year}';
 }

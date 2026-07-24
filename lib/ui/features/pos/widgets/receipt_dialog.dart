@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../data/models/order.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/format.dart';
+import '../../../core/theme/app_colors.dart';
 
 /// Post-checkout receipt: order number, total, paid, change.
 Future<void> showReceiptDialog(BuildContext context, Order order) {
@@ -24,15 +25,26 @@ Future<void> showReceiptDialog(BuildContext context, Order order) {
     context: context,
     builder: (dialogContext) => AlertDialog(
       icon: Icon(
-        Icons.check_circle_outline,
-        color: theme.colorScheme.primary,
+        order.pendingSync ? Icons.cloud_off_outlined : Icons.check_circle_outline,
+        color: order.pendingSync
+            ? theme.colorScheme.warning
+            : theme.colorScheme.primary,
         size: 40,
       ),
-      title: Text(l10n.receiptSuccess),
+      title: Text(order.pendingSync ? l10n.receiptPendingSync : l10n.receiptSuccess),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (order.orderNo != null)
+          if (order.pendingSync)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                l10n.receiptPendingSyncMessage,
+                style: theme.textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            )
+          else if (order.orderNo != null)
             Text(order.orderNo!, style: theme.textTheme.bodySmall),
           const SizedBox(height: 8),
           row(l10n.totalLabel, formatRupiah(order.totalAmount)),

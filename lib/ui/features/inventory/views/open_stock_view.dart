@@ -5,16 +5,22 @@ import 'package:provider/provider.dart';
 import '../../../../data/repositories/daily_stock_repository.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/format.dart';
+import '../../../core/theme/app_colors.dart';
 import '../view_models/open_stock_view_model.dart';
 
 class OpenStockView extends StatelessWidget {
-  const OpenStockView({super.key});
+  const OpenStockView({super.key, this.initialDate});
+
+  /// Deep-linked date (`?date=YYYY-MM-DD`) from the draft detail page's
+  /// "Edit" action.
+  final String? initialDate;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => OpenStockViewModel(
         dailyStockRepository: context.read<DailyStockRepository>(),
+        initialDate: initialDate,
       )..init(),
       child: const _OpenStockScreen(),
     );
@@ -28,6 +34,20 @@ class _OpenStockScreen extends StatelessWidget {
     final viewModel = context.read<OpenStockViewModel>();
     final success = await viewModel.save();
     if (success && context.mounted) context.go('/inventory');
+  }
+
+  Future<void> _pickDate(BuildContext context) async {
+    final viewModel = context.read<OpenStockViewModel>();
+    final min = viewModel.minDate;
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.tryParse(viewModel.selectedDate) ?? min,
+      firstDate: min,
+      lastDate: min.add(const Duration(days: 365)),
+    );
+    if (picked != null) {
+      await viewModel.setDate(picked.toIso8601String().split('T').first);
+    }
   }
 
   @override
@@ -47,9 +67,19 @@ class _OpenStockScreen extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                  child: Text(
-                    l10n.openStockInstruction,
-                    style: theme.textTheme.bodyMedium,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () => _pickDate(context),
+                        icon: const Icon(Icons.calendar_today_outlined, size: 16),
+                        label: Text(viewModel.selectedDate),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(l10n.openStockDateHint, style: theme.textTheme.bodySmall),
+                      const SizedBox(height: 8),
+                      Text(l10n.openStockInstruction, style: theme.textTheme.bodyMedium),
+                    ],
                   ),
                 ),
                 Expanded(
@@ -80,12 +110,29 @@ class _OpenStockScreen extends StatelessWidget {
                           separatorBuilder: (_, _) => const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final line = viewModel.lines[index];
+                            final isLow = line.currentStock <= 5;
                             return Card(
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
                                 child: Row(
                                   children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: SizedBox(
+                                        width: 40,
+                                        height: 40,
+                                        child: line.imageUrl != null
+                                            ? Image.network(
+                                                line.imageUrl!,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, _, _) =>
+                                                    _ProductPlaceholder(theme: theme),
+                                              )
+                                            : _ProductPlaceholder(theme: theme),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
@@ -93,14 +140,38 @@ class _OpenStockScreen extends StatelessWidget {
                                         children: [
                                           Text(line.productName,
                                               style:
-                                                  theme.textTheme.titleSmall),
-                                          Text(
-                                            [
-                                              if (line.price != null)
-                                                formatRupiah(line.price!),
-                                              '${l10n.currentStockLabel}: ${line.currentStock}',
-                                            ].join(' · '),
-                                            style: theme.textTheme.bodySmall,
+                                                  theme.textTheme.titleSmall,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis),
+                                          Row(
+                                            children: [
+                                              if (line.price != null) ...[
+                                                Text(formatRupiah(line.price!),
+                                                    style: theme
+                                                        .textTheme.bodySmall),
+                                                const SizedBox(width: 6),
+                                                Text('·',
+                                                    style: theme
+                                                        .textTheme.bodySmall),
+                                                const SizedBox(width: 6),
+                                              ],
+                                              Flexible(
+                                                child: Text(
+                                                  '${l10n.currentStockLabel}: ${line.currentStock}',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: theme.textTheme.bodySmall!
+                                                      .copyWith(
+                                                    color: isLow
+                                                        ? theme.colorScheme.warning
+                                                        : null,
+                                                    fontWeight: isLow
+                                                        ? FontWeight.w600
+                                                        : null,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
@@ -114,11 +185,24 @@ class _OpenStockScreen extends StatelessWidget {
                                           .decrement(line.productId),
                                     ),
                                     SizedBox(
-                                      width: 40,
-                                      child: Text(
-                                        '${line.openingQty}',
+                                      width: 44,
+                                      child: TextField(
+                                        key: ValueKey(
+                                            '${line.productId}-${line.openingQty}'),
+                                        controller: TextEditingController(
+                                            text: '${line.openingQty}'),
                                         textAlign: TextAlign.center,
+                                        keyboardType: TextInputType.number,
                                         style: theme.textTheme.titleMedium,
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.symmetric(
+                                              vertical: 8),
+                                        ),
+                                        onSubmitted: (value) => viewModel
+                                            .setQuantity(line.productId,
+                                                int.tryParse(value) ?? 0),
+                                        onTapOutside: (_) {},
                                       ),
                                     ),
                                     IconButton(
@@ -188,6 +272,21 @@ class _OpenStockScreen extends StatelessWidget {
                 ),
               ],
             ),
+    );
+  }
+}
+
+class _ProductPlaceholder extends StatelessWidget {
+  const _ProductPlaceholder({required this.theme});
+
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Icon(Icons.inventory_2_outlined,
+          size: 18, color: theme.colorScheme.onSurfaceVariant),
     );
   }
 }
