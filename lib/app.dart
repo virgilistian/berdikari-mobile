@@ -20,6 +20,7 @@ import 'data/repositories/stock_repository.dart';
 import 'data/services/api_client.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/catalog_service.dart';
+import 'data/services/device_image_service.dart';
 import 'data/services/finance_service.dart';
 import 'data/services/inventory_service.dart';
 import 'data/services/sales_service.dart';
@@ -36,6 +37,7 @@ class BerdikariApp extends StatefulWidget {
     this.salesService,
     this.inventoryService,
     this.financeService,
+    this.deviceImageService,
     this.offlineQueueRepository,
     this.appDatabase,
   });
@@ -46,6 +48,7 @@ class BerdikariApp extends StatefulWidget {
   final SalesService? salesService;
   final InventoryService? inventoryService;
   final FinanceService? financeService;
+  final DeviceImageService? deviceImageService;
 
   /// Test seam: inject a repository that skips [OfflineQueueRepository.init]
   /// (real `Connectivity`/`SharedPreferences` platform channels aren't
@@ -79,6 +82,7 @@ class _BerdikariAppState extends State<BerdikariApp> {
   late final SalesService _salesService;
   late final InventoryService _inventoryService;
   late final FinanceService _financeService;
+  late final DeviceImageService _deviceImageService;
   late final GoRouter _router;
 
   @override
@@ -117,6 +121,8 @@ class _BerdikariAppState extends State<BerdikariApp> {
         widget.inventoryService ?? InventoryService(apiClient: _apiClient);
     _financeService =
         widget.financeService ?? FinanceService(apiClient: _apiClient);
+    _deviceImageService =
+        widget.deviceImageService ?? DeviceImageServiceImpl();
 
     _catalogRepository = CatalogRepository(
       catalogService: catalogService,
@@ -193,6 +199,7 @@ class _BerdikariAppState extends State<BerdikariApp> {
         Provider<SalesService>.value(value: _salesService),
         Provider<InventoryService>.value(value: _inventoryService),
         Provider<FinanceService>.value(value: _financeService),
+        Provider<DeviceImageService>.value(value: _deviceImageService),
       ],
       child: MaterialApp.router(
         title: 'Berdikari',

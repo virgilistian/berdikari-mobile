@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:berdikari_mobile/data/local/pending_order_store.dart';
 import 'package:berdikari_mobile/data/models/auth_user.dart';
 import 'package:berdikari_mobile/data/models/daily_stock.dart';
@@ -203,6 +205,41 @@ class FakeCatalogService extends CatalogService {
   @override
   Future<void> deleteProduct(String id) async {
     products = products.where((p) => p.id != id).toList();
+  }
+
+  ApiException? uploadImageError;
+  final List<String> uploadedImagePaths = [];
+  final List<String> deletedImageProductIds = [];
+
+  @override
+  Future<Product> uploadProductImage(String id, File file) async {
+    final error = uploadImageError;
+    if (error != null) throw error;
+    uploadedImagePaths.add(file.path);
+    final index = products.indexWhere((p) => p.id == id);
+    if (index == -1) {
+      throw ApiException(statusCode: 404, message: 'Produk tidak ditemukan.');
+    }
+    final updated = products[index].copyWith(hasPhoto: true);
+    products = [
+      for (final p in products)
+        if (p.id != id) p,
+      updated,
+    ];
+    return updated;
+  }
+
+  @override
+  Future<void> deleteProductImage(String id) async {
+    deletedImageProductIds.add(id);
+    final index = products.indexWhere((p) => p.id == id);
+    if (index == -1) return;
+    final updated = products[index].copyWith(hasPhoto: false);
+    products = [
+      for (final p in products)
+        if (p.id != id) p,
+      updated,
+    ];
   }
 
   @override

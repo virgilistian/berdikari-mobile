@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -79,6 +80,51 @@ class ApiClient {
     Map<String, String>? query,
   }) =>
       _send('DELETE', path, query: query);
+
+  /// Uploads [file] as multipart form field [fieldName] — the only shape
+  /// the file-upload endpoints (product photo, business logo, tax
+  /// signature/stamp) accept. Separate from [_send] because a JSON body and
+  /// a multipart body are mutually exclusive per request.
+  Future<Map<String, dynamic>> postMultipart(
+    String path, {
+    required String fieldName,
+    required File file,
+  }) async {
+    final uri = Uri.parse('$_baseUrl$path');
+    final request = http.MultipartRequest('POST', uri);
+    request.headers['Accept'] = 'application/json';
+    final token = await tokenProvider();
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+    request.files.add(await http.MultipartFile.fromPath(fieldName, file.path));
+
+    final response = await http.Response.fromStream(await _http.send(request));
+
+    if (response.statusCode == 401) {
+      await onUnauthorized?.call();
+    }
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw _toException(response);
+    }
+    if (response.body.isEmpty) return const {};
+
+    final decoded = jsonDecode(response.body);
+    return decoded is Map<String, dynamic> ? decoded : {'data': decoded};
+  }
+
+  /// Current API base URL — used to build direct-load URLs for endpoints
+  /// (e.g. product photo) that are displayed via `Image.network` rather
+  /// than fetched through [get].
+  String get baseUrl => _baseUrl;
+
+  /// Headers to attach to an authenticated `Image.network` request against
+  /// this API (product photo, etc.) — those endpoints sit behind
+  /// `auth:sanctum` just like every JSON route.
+  Future<Map<String, String>> authHeaders() async {
+    final token = await tokenProvider();
+    return token == null ? const {} : {'Authorization': 'Bearer $token'};
+  }
 
   /// Repoints the client at a Remote Config-provided base URL, once fetched.
   /// No-op for an empty value — the compile-time [Env.apiBaseUrl] default

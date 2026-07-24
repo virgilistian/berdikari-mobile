@@ -6,6 +6,7 @@ import '../../../../data/repositories/auth_repository.dart';
 import '../../../../data/repositories/catalog_repository.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/format.dart';
+import '../../../core/widgets/authed_network_image.dart';
 import '../../../core/widgets/sync_status_indicator.dart';
 import '../view_models/catalog_view_model.dart';
 import '../widgets/product_form_sheet.dart';
@@ -203,6 +204,32 @@ class _ProductCard extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: product.hasPhoto
+                          ? AuthedNetworkImage(
+                              url: context
+                                  .read<CatalogRepository>()
+                                  .productImageUrl(product.id),
+                              placeholder: ColoredBox(
+                                color: theme.colorScheme.surfaceContainerHighest,
+                                child: Icon(Icons.image_outlined,
+                                    size: 16,
+                                    color: theme.colorScheme.onSurfaceVariant),
+                              ),
+                            )
+                          : ColoredBox(
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              child: Icon(Icons.inventory_2_outlined,
+                                  size: 16,
+                                  color: theme.colorScheme.onSurfaceVariant),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       product.categoryName ?? l10n.noCategoryLabel,

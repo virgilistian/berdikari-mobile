@@ -455,6 +455,26 @@
   "@newProduct": {
     "description": "Judul form produk baru"
   },
+  "productPhotoLabel": "Foto produk",
+  "@productPhotoLabel": {
+    "description": "Label bagian foto produk"
+  },
+  "takePhoto": "Ambil Foto",
+  "@takePhoto": {
+    "description": "Tombol ambil foto dari kamera"
+  },
+  "chooseFromGallery": "Pilih dari Galeri",
+  "@chooseFromGallery": {
+    "description": "Tombol pilih foto dari galeri"
+  },
+  "removePhoto": "Hapus Foto",
+  "@removePhoto": {
+    "description": "Tombol hapus foto produk"
+  },
+  "photoCompressHint": "Foto otomatis dikompres agar hemat kuota dan penyimpanan.",
+  "@photoCompressHint": {
+    "description": "Penjelasan kompresi otomatis foto produk"
+  },
   "productNameLabel": "Nama produk",
   "@productNameLabel": {
     "description": "Label nama produk"

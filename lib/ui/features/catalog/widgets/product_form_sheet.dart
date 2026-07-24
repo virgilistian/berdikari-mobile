@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../../../data/models/product.dart';
 import '../../../../data/repositories/catalog_repository.dart';
+import '../../../../data/services/device_image_service.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/format.dart';
+import '../../../core/widgets/authed_network_image.dart';
 import '../../../core/widgets/rupiah_field.dart';
 import '../view_models/product_form_view_model.dart';
 
@@ -16,6 +18,7 @@ Future<bool> showProductFormSheet(
   Product? product,
 }) async {
   final catalog = context.read<CatalogRepository>();
+  final deviceImage = context.read<DeviceImageService>();
   final result = await showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
@@ -23,6 +26,7 @@ Future<bool> showProductFormSheet(
     builder: (_) => ChangeNotifierProvider(
       create: (_) => ProductFormViewModel(
         catalogRepository: catalog,
+        deviceImageService: deviceImage,
         existing: product,
       ),
       child: ProductFormSheet(categories: categories),
@@ -148,6 +152,8 @@ class _ProductFormSheetState extends State<ProductFormSheet> {
                   isEditing ? l10n.editProduct : l10n.newProduct,
                   style: theme.textTheme.titleMedium,
                 ),
+                const SizedBox(height: 16),
+                _ProductPhotoField(viewModel: viewModel),
                 const SizedBox(height: 16),
                 if (viewModel.errorMessage != null) ...[
                   Text(
@@ -293,6 +299,110 @@ class _ProductFormSheetState extends State<ProductFormSheet> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ProductPhotoField extends StatelessWidget {
+  const _ProductPhotoField({required this.viewModel});
+
+  final ProductFormViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final editing = viewModel.editing;
+    final placeholder = ColoredBox(
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Icon(Icons.image_outlined,
+          size: 32, color: theme.colorScheme.onSurfaceVariant),
+    );
+
+    Widget preview;
+    final pickedFile = viewModel.pickedImageFile;
+    if (pickedFile != null) {
+      preview = Image.file(pickedFile, fit: BoxFit.cover);
+    } else if (viewModel.hasPhoto && editing != null) {
+      preview = AuthedNetworkImage(
+        url: context.read<CatalogRepository>().productImageUrl(editing.id),
+        placeholder: placeholder,
+      );
+    } else {
+      preview = placeholder;
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            width: 72,
+            height: 72,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                preview,
+                if (viewModel.pickingImage)
+                  const ColoredBox(
+                    color: Colors.black38,
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.productPhotoLabel, style: theme.textTheme.bodySmall),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: viewModel.pickingImage
+                        ? null
+                        : viewModel.pickImageFromCamera,
+                    icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                    label: Text(l10n.takePhoto),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: viewModel.pickingImage
+                        ? null
+                        : viewModel.pickImageFromGallery,
+                    icon: const Icon(Icons.photo_library_outlined, size: 18),
+                    label: Text(l10n.chooseFromGallery),
+                  ),
+                  if (viewModel.hasPhoto)
+                    TextButton.icon(
+                      onPressed: viewModel.pickingImage || viewModel.saving
+                          ? null
+                          : viewModel.removeImage,
+                      icon: Icon(Icons.delete_outline,
+                          size: 18, color: theme.colorScheme.error),
+                      label: Text(l10n.removePhoto,
+                          style: TextStyle(color: theme.colorScheme.error)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(l10n.photoCompressHint, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

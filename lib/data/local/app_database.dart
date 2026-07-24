@@ -152,6 +152,8 @@ class AppDatabase {
         costPrice: row['cost_price'] as int,
         isActive: row['is_active'] as bool,
         imageUrl: row['image_url'] as String?,
+        hasPhoto: row['has_photo'] as bool? ?? false,
+        pendingImagePath: row['pending_image_path'] as String?,
         pendingSync: SyncRowStatus.fromName(row['sync_status'] as String?)
             .isPending,
       );
@@ -167,6 +169,8 @@ class AppDatabase {
         'cost_price': product.costPrice,
         'is_active': product.isActive,
         'image_url': product.imageUrl,
+        'has_photo': product.hasPhoto,
+        'pending_image_path': product.pendingImagePath,
         'sync_status': status.name,
       };
 
@@ -184,9 +188,18 @@ class AppDatabase {
     final seen = <String>{};
     for (final product in products) {
       seen.add(product.id);
-      final status = _statusOf(_products[product.id]);
+      final existingRow = _products[product.id];
+      final status = _statusOf(existingRow);
       if (status != SyncRowStatus.synced) continue;
-      _put('products', product.id, _productToRow(product, SyncRowStatus.synced));
+      // Don't let a background refresh wipe out a photo still queued for
+      // upload — the server response here predates that upload finishing.
+      final pendingImagePath = existingRow == null
+          ? null
+          : _productFromRow(existingRow).pendingImagePath;
+      final merged = pendingImagePath == null
+          ? product
+          : product.copyWith(pendingImagePath: pendingImagePath);
+      _put('products', product.id, _productToRow(merged, SyncRowStatus.synced));
     }
     for (final id in _products.keys.toList()) {
       if (seen.contains(id)) continue;
@@ -210,6 +223,16 @@ class AppDatabase {
   }
 
   void removeProduct(String id) => _remove('products', id);
+
+  /// Single-row lookup by id, including a row pending deletion — used by
+  /// the photo-upload queue to read/update a row without going through the
+  /// list-filtering [getProducts].
+  Product? findProduct(String id) {
+    final row = _products[id];
+    return row == null ? null : _productFromRow(row);
+  }
+
+  SyncRowStatus productStatus(String id) => _statusOf(_products[id]);
 
   // ---------------- Categories ----------------
 

@@ -1,9 +1,16 @@
+import 'dart:io';
+
 import 'package:berdikari_mobile/data/local/app_database.dart';
 import 'package:berdikari_mobile/data/models/product.dart';
 import 'package:berdikari_mobile/data/repositories/catalog_repository.dart';
+import 'package:berdikari_mobile/data/services/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fakes.dart';
+
+File _tempImageFile() => File(
+      '${Directory.systemTemp.path}/product_photo_test_${DateTime.now().microsecondsSinceEpoch}.jpg',
+    )..writeAsBytesSync([0, 1, 2, 3]);
 
 void main() {
   group('CatalogRepository', () {
@@ -78,6 +85,94 @@ void main() {
 
       final (all, _) = await repo.loadAll();
       expect(all, isEmpty);
+    });
+
+    test('attachLocalImage uploads immediately for an already-synced product',
+        () async {
+      final service =
+          FakeCatalogService(products: [sampleProduct(id: 'p1')]);
+      final repo = CatalogRepository(catalogService: service, database: AppDatabase());
+      await repo.load();
+      final file = _tempImageFile();
+      addTearDown(() { if (file.existsSync()) file.deleteSync(); });
+
+      await repo.attachLocalImage('p1', file.path);
+      await pumpEventQueue(times: 200);
+
+      expect(service.uploadedImagePaths, contains(file.path));
+      final (all, _) = await repo.loadAll();
+      final updated = all.firstWhere((p) => p.id == 'p1');
+      expect(updated.hasPhoto, isTrue);
+      expect(updated.pendingImagePath, isNull);
+    });
+
+    test(
+        'a photo queued at creation time survives the local-id -> server-id '
+        'swap and uploads once the create syncs', () async {
+      final service = FakeCatalogService(products: []);
+      final repo = CatalogRepository(catalogService: service, database: AppDatabase());
+      await repo.load();
+
+      final created = await repo.saveProduct(
+        name: 'Es Jeruk',
+        categoryId: 'c1',
+        price: 6000,
+        costPrice: 2500,
+        isActive: true,
+      );
+      expect(created.id, startsWith('local-'));
+
+      // Attached before the create's background sync has resolved — this
+      // is the exact race the local-id -> server-id swap must survive.
+      final file = _tempImageFile();
+      addTearDown(() { if (file.existsSync()) file.deleteSync(); });
+      await repo.attachLocalImage(created.id, file.path);
+
+      await pumpEventQueue(times: 200);
+
+      expect(service.uploadedImagePaths, contains(file.path));
+      final (all, _) = await repo.loadAll();
+      final synced = all.firstWhere((p) => p.name == 'Es Jeruk');
+      expect(synced.id, isNot(startsWith('local-')));
+      expect(synced.hasPhoto, isTrue);
+      expect(synced.pendingImagePath, isNull);
+    });
+
+    test('removeProductImage deletes the server-side photo and clears local state',
+        () async {
+      final service =
+          FakeCatalogService(products: [sampleProduct(id: 'p1')]);
+      final repo = CatalogRepository(catalogService: service, database: AppDatabase());
+      await repo.load();
+      final file = _tempImageFile();
+      addTearDown(() { if (file.existsSync()) file.deleteSync(); });
+      await repo.attachLocalImage('p1', file.path);
+      await pumpEventQueue(times: 200);
+
+      await repo.removeProductImage('p1');
+
+      expect(service.deletedImageProductIds, contains('p1'));
+      final (all, _) = await repo.loadAll();
+      expect(all.firstWhere((p) => p.id == 'p1').hasPhoto, isFalse);
+    });
+
+    test('a server-rejected photo upload is dropped instead of retried forever',
+        () async {
+      final service = FakeCatalogService(products: [sampleProduct(id: 'p1')])
+        ..uploadImageError =
+            ApiException(statusCode: 422, message: 'Format gambar tidak didukung.');
+      final repo = CatalogRepository(catalogService: service, database: AppDatabase());
+      await repo.load();
+      final file = _tempImageFile();
+      addTearDown(() { if (file.existsSync()) file.deleteSync(); });
+
+      await repo.attachLocalImage('p1', file.path);
+      await pumpEventQueue(times: 200);
+
+      final (all, _) = await repo.loadAll();
+      final product = all.firstWhere((p) => p.id == 'p1');
+      expect(product.hasPhoto, isFalse);
+      expect(product.pendingImagePath, isNull);
     });
 
     test('createCategory appends to the cached category list', () async {

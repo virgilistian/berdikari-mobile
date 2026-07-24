@@ -12,6 +12,8 @@ class Product {
     required this.costPrice,
     required this.isActive,
     required this.imageUrl,
+    this.hasPhoto = false,
+    this.pendingImagePath,
     this.pendingSync = false,
   });
 
@@ -26,6 +28,7 @@ class Product {
         costPrice: parseRupiah(json['cost_price']),
         isActive: json['is_active'] as bool? ?? true,
         imageUrl: json['image_url'] as String?,
+        hasPhoto: json['has_photo'] as bool? ?? false,
       );
 
   final String id;
@@ -42,9 +45,42 @@ class Product {
   final bool isActive;
   final String? imageUrl;
 
+  /// True once the server holds a compressed photo for this product,
+  /// reachable at `GET /catalog/products/{id}/image`.
+  final bool hasPhoto;
+
+  /// Local-only: path to a compressed photo file waiting to be uploaded
+  /// (queued because the product hadn't synced yet, or the device was
+  /// offline when it was picked). Never sent to the server directly —
+  /// [CatalogRepository] uploads it via a dedicated multipart request once
+  /// a real product id and connectivity are both available.
+  final String? pendingImagePath;
+
   /// True while a create/update for this product is still sitting in the
   /// local sync outbox, not yet confirmed by the server.
   final bool pendingSync;
+
+  Product copyWith({
+    bool? hasPhoto,
+    String? pendingImagePath,
+    bool clearPendingImagePath = false,
+  }) =>
+      Product(
+        id: id,
+        categoryId: categoryId,
+        categoryName: categoryName,
+        name: name,
+        sku: sku,
+        price: price,
+        costPrice: costPrice,
+        isActive: isActive,
+        imageUrl: imageUrl,
+        hasPhoto: hasPhoto ?? this.hasPhoto,
+        pendingImagePath: clearPendingImagePath
+            ? null
+            : (pendingImagePath ?? this.pendingImagePath),
+        pendingSync: pendingSync,
+      );
 }
 
 class ProductCategory {

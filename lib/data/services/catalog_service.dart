@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../models/product.dart';
 import 'api_client.dart';
 
@@ -48,6 +50,24 @@ class CatalogService {
   }
 
   Future<void> deleteProduct(String id) => _api.delete('/catalog/products/$id');
+
+  /// Uploads (or replaces) a product's photo. The server re-compresses and
+  /// re-validates regardless of client-side compression already applied.
+  Future<Product> uploadProductImage(String id, File file) async {
+    final response = await _api.postMultipart(
+      '/catalog/products/$id/image',
+      fieldName: 'file',
+      file: file,
+    );
+    return Product.fromJson(response['data'] as Map<String, dynamic>);
+  }
+
+  Future<void> deleteProductImage(String id) =>
+      _api.delete('/catalog/products/$id/image');
+
+  /// Direct-load URL for a product's photo — pair with [ApiClient.authHeaders]
+  /// when rendering via `Image.network` (the endpoint sits behind auth).
+  String productImageUrl(String id) => '${_api.baseUrl}/catalog/products/$id/image';
 
   Future<ProductCategory> createCategory(String name) async {
     final response =

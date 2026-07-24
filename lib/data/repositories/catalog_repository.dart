@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -33,6 +34,10 @@ class CatalogRepository extends ChangeNotifier {
 
   int get pendingCount =>
       _db.pendingCountFor('product') + _db.pendingCountFor('category');
+
+  /// Direct-load URL for a product's photo — the UI pairs this with
+  /// `ApiClient.authHeaders()` via `AuthedNetworkImage`.
+  String productImageUrl(String id) => _catalog.productImageUrl(id);
 
   Future<void> _ensureBootstrapped() async {
     if (_bootstrapped) return;
@@ -144,6 +149,46 @@ class CatalogRepository extends ChangeNotifier {
     unawaited(pushPending());
   }
 
+  /// Queues [localImagePath] (an already client-compressed file) for upload
+  /// against [productId]. Uploads immediately when possible; if the product
+  /// is still a locally-created row (no server id yet) or the device is
+  /// offline, the path is persisted and picked up by [pushPending] —
+  /// including the moment a brand-new product's create finishes syncing.
+  Future<void> attachLocalImage(String productId, String localImagePath) async {
+    final current = _db.findProduct(productId);
+    if (current == null) return;
+    _db.putLocalProduct(
+      current.copyWith(pendingImagePath: localImagePath),
+      _db.productStatus(productId),
+    );
+    notifyListeners();
+    unawaited(pushPending());
+  }
+
+  /// Deletes the product's photo. Awaited by the form UI so a failure can
+  /// be surfaced (unlike the queued upload path, this only ever applies to
+  /// an already-synced product, so there's always a server call to make).
+  Future<void> removeProductImage(String productId) async {
+    final current = _db.findProduct(productId);
+    if (current == null || productId.startsWith('local-')) {
+      // Nothing synced yet — just drop whatever was queued locally.
+      if (current != null) {
+        _db.putLocalProduct(
+          current.copyWith(hasPhoto: false, clearPendingImagePath: true),
+          _db.productStatus(productId),
+        );
+        notifyListeners();
+      }
+      return;
+    }
+    await _catalog.deleteProductImage(productId);
+    _db.putLocalProduct(
+      current.copyWith(hasPhoto: false, clearPendingImagePath: true),
+      _db.productStatus(productId),
+    );
+    notifyListeners();
+  }
+
   Future<ProductCategory> createCategory(String name) async {
     await _ensureBootstrapped();
     final localId = 'local-${generateClientUuid()}';
@@ -171,6 +216,7 @@ class CatalogRepository extends ChangeNotifier {
     try {
       await _pushCategories();
       await _pushProducts();
+      await _pushProductImages();
     } finally {
       _pushing = false;
     }
@@ -208,6 +254,10 @@ class CatalogRepository extends ChangeNotifier {
           await _catalog.deleteProduct(job.entityId);
           _db.removeProduct(job.entityId);
         } else {
+          // Read before the id swap — a queued photo (picked before this
+          // create/update ever reached the server) is mobile-local-only and
+          // never round-trips through the server response.
+          final pendingImagePath = _db.findProduct(job.entityId)?.pendingImagePath;
           final saved = await _catalog.saveProduct(
             id: job.operation == 'update' ? job.entityId : null,
             name: job.payload['name'] as String,
@@ -217,12 +267,59 @@ class CatalogRepository extends ChangeNotifier {
             sku: job.payload['sku'] as String?,
             isActive: job.payload['is_active'] as bool,
           );
-          _db.markProductSynced(saved, replacesLocalId: job.entityId);
+          final merged = pendingImagePath == null
+              ? saved
+              : saved.copyWith(pendingImagePath: pendingImagePath);
+          _db.markProductSynced(merged, replacesLocalId: job.entityId);
         }
         _db.markSynced(job.localId);
         notifyListeners();
       } on ApiException catch (e) {
         _db.markFailed(job.localId, e.message);
+        notifyListeners();
+      } catch (_) {
+        break; // network-level failure — retry on the next sync pass.
+      }
+    }
+  }
+
+  /// Uploads every product's queued local photo once it has a real
+  /// (server-synced) id. Runs after [_pushProducts] in the same
+  /// [pushPending] pass so a photo attached to a brand-new product uploads
+  /// right after that product's create confirms.
+  Future<void> _pushProductImages() async {
+    for (final product in _db.getProducts()) {
+      final path = product.pendingImagePath;
+      if (path == null || product.id.startsWith('local-')) continue;
+      try {
+        final file = File(path);
+        if (!await file.exists()) {
+          // Compressed temp file is gone (cache cleared, app restarted
+          // mid-queue) — drop the stale pointer rather than retry forever.
+          _db.putLocalProduct(
+            product.copyWith(clearPendingImagePath: true),
+            _db.productStatus(product.id),
+          );
+          notifyListeners();
+          continue;
+        }
+        final saved = await _catalog.uploadProductImage(product.id, file);
+        // Preserve whatever sync status the row already had — a photo
+        // upload is independent of the product's own create/update job,
+        // which may still be queued (or may have just synced moments ago).
+        _db.putLocalProduct(
+          product.copyWith(hasPhoto: saved.hasPhoto, clearPendingImagePath: true),
+          _db.productStatus(product.id),
+        );
+        unawaited(file.delete().catchError((_) => file));
+        notifyListeners();
+      } on ApiException {
+        // Server rejected this file (bad format, still over the cap after
+        // compression) — retrying it unchanged would fail again forever.
+        _db.putLocalProduct(
+          product.copyWith(clearPendingImagePath: true),
+          _db.productStatus(product.id),
+        );
         notifyListeners();
       } catch (_) {
         break; // network-level failure — retry on the next sync pass.
